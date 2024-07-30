@@ -30,4 +30,7 @@ class TestModel < Test::Unit::TestCase
     p M[:_脚本].query(name: '/app/all_dept').to_a
   end
 
+  def test_change_db
+    t = M.change_db(:dc_matrix)[:sys_dict]
+  end
 end

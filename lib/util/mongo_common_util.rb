@@ -1,6 +1,7 @@
 require_relative 'db_mongo'
 
 module MongoCommonUtil
+  # attr_accessor :db
   def common_data
     {
       _create_time: Time.now,
@@ -36,7 +37,7 @@ module MongoCommonUtil
     else
       # @mc[key.to_sym]
       found = Global.instance._sys_models&.find {|f| f._name == key}
-      @db = DBMongo.new
+      @db = DBMongo.new if @db.nil?
       unless found.nil?
         found.public_methods(false).each do |m|
           next unless m.name[0] == '_'
@@ -49,6 +50,13 @@ module MongoCommonUtil
       end
     end
   end
+
+  def change_db(db_name)
+    @db = DBMongo.new
+    @db.db = @db.db.use(db_name)
+    self
+  end
+
 
   def query(query_hash = {}, opts = {})
     mongo_parse_query!(query_hash)
