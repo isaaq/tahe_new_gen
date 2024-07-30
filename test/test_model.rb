@@ -31,6 +31,10 @@ class TestModel < Test::Unit::TestCase
   end
 
   def test_change_db
-    t = M.change_db(:dc_matrix)[:sys_dict]
+    t = M.change_db(:dc_matrix)[:sys_dict].query(name: '行业类型').to_a
+    p t
+
+    t2 = M.change_db(:appback_test, {host:'112.74.62.46', user:'admin', pass:'Th2020.!', db: 'admin'})[:b_dicts].query(name: 'logo').to_a
+    p t2
   end
 end

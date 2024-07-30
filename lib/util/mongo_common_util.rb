@@ -51,8 +51,8 @@ module MongoCommonUtil
     end
   end
 
-  def change_db(db_name)
-    @db = DBMongo.new
+  def change_db(db_name, opts = {})
+    @db = DBMongo.new(opts)
     @db.db = @db.db.use(db_name)
     self
   end
