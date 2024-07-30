@@ -1,0 +1,53 @@
+module ApplicationHelper
+  include Common
+  def _params
+    body = request.body.read
+    return params if body == ''
+
+    JSON.parse(body, { symbolize_names: true }) || params
+  end
+
+  def make_resp(data, code = 0, msg = 'success')
+    { code: code, msg: msg, data: data || {} }.to_json
+  end
+
+  def ok
+    ''.to_resp
+  end
+
+  def token
+
+  end
+
+  def check_auth
+
+  end
+
+  def _routes
+    self.class.routes.each do |rinfo|
+      if %w[GET POST PUT DELETE].include?(rinfo[0])
+        cached = R.hkeys('routes')
+        rinfo[1].each do |rt|
+          url = rt[0].safe_string
+          if cached.include?(url)
+
+          else
+            R.hset('routes', url, {}.to_json)
+          end
+        end
+      end
+    end
+  end
+end
+
+class Object
+  include ApplicationHelper
+
+  def to_resp
+    make_resp(self, 0, 'success')
+  end
+
+  def to_paged_resp(num, size, totalcount)
+    { code: 0, msg: 'success', data: self, count: totalcount || {} }.to_json
+  end
+end

@@ -1,0 +1,2 @@
+class MEquip
+end
