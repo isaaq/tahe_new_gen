@@ -1,7 +1,7 @@
 require_relative 'db_mongo_mod'
 
 class DBMongo
-  attr_accessor :db, :table
+  attr_accessor :db, :table, :table_alias, :model
 
   def initialize(opts = {})
     init(opts)

@@ -3,5 +3,5 @@ class QueryCommon
 
   end
 
-  def
+
 end

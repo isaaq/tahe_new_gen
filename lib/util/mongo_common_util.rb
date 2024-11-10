@@ -1,17 +1,18 @@
 require_relative 'db_mongo'
 
 module MongoCommonUtil
-  # attr_accessor :db
+  attr_accessor :load_path
+
   def common_data
     {
       _create_time: Time.now,
       _update_time: Time.now,
-      _enabled: true,
+      _enabled: true
     }
   end
 
   def load_model(file = nil)
-    @db = DBMongo.new
+    @db = DBMongo.new if @db.nil?
     if file.nil?
     else
       txt = File.read(file)
@@ -24,31 +25,37 @@ module MongoCommonUtil
   end
 
   def [](key)
-    # TODO 从.m文件中读取 目前读test目录需要修改
+    @db = DBMongo.new if @db.nil?
+    # TODO: 从.m文件中读取 目前读test目录需要修改
 
-    # TODO 读取系统模型
+    # TODO: 读取系统模型
     load_sys_models
-    # TODO 缓存
-    path = "./test/data/dsl/model/#{key.to_s}.m"
-
-    if File.exist?(path)
-      @model = load_model(path) if @model.nil?
-      @model
-    else
-      # @mc[key.to_sym]
-      found = Global.instance._sys_models&.find {|f| f._name == key}
-      @db = DBMongo.new if @db.nil?
-      unless found.nil?
-        found.public_methods(false).each do |m|
-          next unless m.name[0] == '_'
-          parse "#{m.name} #{found.send m.name}"
-        end
-        self
-      else
-        table(key)
-        self
+    Global.instance._user_models ||= []
+    # TODO: 缓存
+    unless @load_path.nil?
+      Dir["#{@load_path}/*.m"].each do |mfile|
+        model = parse_file_model(mfile)
+        Global.instance._user_models << model if !model.nil? && !Global.instance._user_models.include?(model)
       end
     end
+
+    # path = "./test/data/dsl/model/#{key}.m"
+    # Global.instance._user_models.find {|f| f}
+    models = ((Global.instance._sys_models || []) + Global.instance._user_models).flatten(1)
+
+    found = models.find { |f| f._name == key.to_s }
+    if found.nil?
+      table(key)
+    else
+      # found.public_methods(false).each do |m|
+      #   next unless m.name[0] == '_'
+
+      #   parse "#{m.name} #{found.send m.name}"
+      # end
+      table(found._table)
+    end
+    @db.model = found
+    self
   end
 
   def change_db(db_name, opts = {})
@@ -57,12 +64,12 @@ module MongoCommonUtil
     self
   end
 
-
   def query(query_hash = {}, opts = {})
     mongo_parse_query!(query_hash)
     qry = @db.db[@db.table].find(query_hash)
     qry.sort(opts[:sort]) unless opts[:sort].nil?
     @db.db.close
+    qry.model = @db.model
     qry
   end
 
@@ -71,9 +78,7 @@ module MongoCommonUtil
     r = @db.db[@db.table].delete_one(query_hash)
     # 垃圾箱
     Common::C[:audit_level] ||= 2
-    if Common::C[:audit_level] != 0
-      add_to_recyc(del_data, 'del')
-    end
+    add_to_recyc(del_data, 'del') if Common::C[:audit_level] != 0
     @db.db.close
     r
   end
@@ -83,27 +88,23 @@ module MongoCommonUtil
     r = @db.db[@db.table].delete_many(query_hash)
     # 垃圾箱
     Common::C[:audit_level] ||= 2
-    if Common::C[:audit_level] != 0
-      add_to_recyc(del_data, 'del_many')
-    end
+    add_to_recyc(del_data, 'del_many') if Common::C[:audit_level] != 0
     @db.db.close
     r
   end
 
-  def add(data = {}, opts = {})
+  def add(data = {}, _opts = {})
     data.merge!(common_data)
     Common::C[:audit_level] ||= 2
-    if Common::C[:audit_level] >= 3
-      add_to_recyc(data, 'add')
-    end
+    add_to_recyc(data, 'add') if Common::C[:audit_level] >= 3
     r = @db.db[@db.table].insert_one(data)
     @db.db.close
     r
   end
 
-  def update(query_hash = {}, data = {}, opts = {})
+  def update(query_hash = {}, data = {}, _opts = {})
     common_update_data = {
-      _update_time: Time.now,
+      _update_time: Time.now
     }
     data.merge!(common_update_data)
     r = @db.db[@db.table].find_one_and_update(query_hash, data)
@@ -116,9 +117,9 @@ module MongoCommonUtil
     r
   end
 
-  def update_many(query_hash = {}, data = {}, opts = {})
+  def update_many(query_hash = {}, data = {}, _opts = {})
     common_update_data = {
-      _update_time: Time.now,
+      _update_time: Time.now
     }
     data.merge!(common_update_data)
     r = @db.db[@db.table].update_many(query_hash, data)
@@ -131,15 +132,29 @@ module MongoCommonUtil
     r
   end
 
-  def method_missing(m, *args, &block)
-    p "missing #{m}"
+  def method_missing(m, *_args)
+    __p "missing #{m}"
   end
 
-  def gen_sample_ui_code
-
-  end
+  def gen_sample_ui_code; end
 
   private
+
+  def parse_file_model(path)
+    return unless File.exist?(path)
+
+    txt = File.read(path)
+    bm = BaseModel.new
+    bm.extend SysModelCommon
+
+    lines = txt.split("\n")
+    lines.each do |l|
+      parse_code_to_clazz(l, bm)
+    end
+    # Global.instance._user_models ||= []
+    # Global.instance._user_models << bm
+    bm
+  end
 
   def add_to_recyc(del_data, type)
     data = { table: @db.table, data: del_data, type: type }
@@ -147,14 +162,16 @@ module MongoCommonUtil
     @db.db[:recyc].insert_one(data)
   end
 
-  def extends(params)
-    if self.class.is_a?(BaseModel)
-
-    end
+  def extends(_params)
+    nil unless self.class.is_a?(BaseModel)
   end
 
   def table(params)
     @db.table = params
+  end
+
+  def table_alias(params)
+    @db.table_alias = params
   end
 
   def process_type(clazz)
@@ -162,23 +179,41 @@ module MongoCommonUtil
     bs.build
   end
 
+  def parse_code_to_clazz(line, clazz)
+    return nil if line.match(%r{^// .+?})
+
+    line.strip!
+    parsed_code = line.split(' ')
+    return unless parsed_code.length > 0
+
+    sym = parsed_code[0].to_sym
+    cmd = { '↑': 'extends', '表': '_table', '名': '_name', '->': '_fk' }
+    func = cmd[sym]&.to_sym || sym.to_s.gsub('_', '').to_sym
+    begin
+      clazz.send(func, *parsed_code[1].split(','))
+    rescue Exception => e
+      __p e
+    end
+  end
+
   def parse(code)
-    return nil if code.match(/^\/\/ .+?/)
+    return nil if code.match(%r{^// .+?})
+
     code.strip!
     parsed_code = code.split(' ')
-    if parsed_code.length > 0
-      sym = parsed_code[0].to_sym
-      cmd = { '↑': 'extends', '表': 'table' }
-      type_list = ObjectSpace.each_object(Class).select { |klass| klass < BaseType }
-      func = cmd[sym]&.to_sym || sym.to_s.gsub('_','').to_sym
-      if func.nil?
-        type_map = type_list.inject({}) { |t, i| t[i._name] = i; t }
-        if !type_map.nil? && !type_map[sym].nil?
-          process_type(type_map[sym])
-        end
-      else
-        send(func, parsed_code[1]) if private_methods.include?(func)
+    return unless parsed_code.length > 0
+
+    sym = parsed_code[0].to_sym
+    cmd = { '↑': 'extends', '表': 'table', '名': 'table_alias' }
+    type_list = ObjectSpace.each_object(Class).select { |klass| klass < BaseType }
+    func = cmd[sym]&.to_sym || sym.to_s.gsub('_', '').to_sym
+    if func.nil?
+      type_map = type_list.each_with_object({}) do |i, t|
+        t[i._name] = i
       end
+      process_type(type_map[sym]) if !type_map.nil? && !type_map[sym].nil?
+    elsif private_methods.include?(func)
+      send(func, parsed_code[1])
     end
   end
 
@@ -186,27 +221,45 @@ module MongoCommonUtil
     def self.get_ret(db, qry)
       result = qry.to_a
       db.db.close
-      p db.db.closed?
+      __p db.db.closed?
       result
     end
   end
 
-  private
-
   # @param [Hash] qry
   def mongo_parse_query!(qry)
     # 全局搜索
-    if qry.has_key?(:_global_search_str)
+    nil unless qry.has_key?(:_global_search_str)
 
-    end
     # 角色权限
+    # Common::C[:auto_role_query]
 
+    # 模型的额外属性
+    # __p @db.model._fk
   end
 
   def load_sys_models
-    path = './lib/model/sys'
+    './lib/model/sys'
     # MSysPage._table
     # p Dir.entries(path)
     # @_sys_models
+  end
+
+  class Mongo::Collection::View
+    attr_accessor :model
+
+    def to_all
+      all = self.to_a # super.to_a
+      all.each do |e|
+        @model&._fks&.each do |fk|
+          fnd = Global.instance._user_models.find { |f| f._name == fk.name || f._table == fk.table }
+          tbl_name = fnd._table
+          e["fk_#{tbl_name}".to_sym]&.map! do |m|
+            id = m.is_a?(Hash) ? m[:_id] || m[:id] : m
+            Common::M[tbl_name.to_sym].query(_id: id&.to_objid).to_a[0]
+          end
+        end
+      end
+    end
   end
 end
