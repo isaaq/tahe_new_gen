@@ -6,10 +6,10 @@ class Main {
             const { instance } = await WebAssembly.instantiateStreaming(fetchPromise);
             return instance
         })();
-    },
+    }
 
 }
 
-let _main = new Main();
-Opal.loaded(typeof (OpalLoaded) === "undefined" ? [] : OpalLoaded); 
-Opal.require("opal"); Opal.require("ui/web");
+// let _main = new Main();
+// Opal.loaded(typeof (OpalLoaded) === "undefined" ? [] : OpalLoaded);
+// Opal.require("opal"); Opal.require("ui/web");

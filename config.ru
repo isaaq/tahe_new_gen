@@ -10,7 +10,7 @@ require 'redis'
 require 'opal'
 require 'opal-jquery'
 require 'opal-sprockets'
-
+require 'faraday'
 require 'jwt'
 require 'letsaboard'
 

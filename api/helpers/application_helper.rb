@@ -2,9 +2,18 @@ module ApplicationHelper
   include Common
   def _params
     body = request.body.read
+    params.delete_if {|k,v| k.start_with?('__')}
     return params if body == ''
-
-    JSON.parse(body, { symbolize_names: true }) || params
+    json = {}
+    begin
+      json = JSON.parse(body, { symbolize_names: true })
+    rescue
+      json = body
+    end
+    # json.merge(params).transform_keys(&:to_sym)
+    o = json || params
+    o.delete_if {|k,v| k.start_with?('__')} if o.is_a?(Hash)
+    o
   end
 
   def make_resp(data, code = 0, msg = 'success')

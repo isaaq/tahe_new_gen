@@ -20,6 +20,8 @@
     <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.3.3, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="connection_pool (v2.4.1, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="drb (v2.2.1, RVM: ruby-3.3.5) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="faraday (v2.7.10, RVM: ruby-3.3.5) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="faraday-net_http (v3.0.2, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="i18n (v1.14.5, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="jwt (v2.8.2, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="letsaboard (v1.0.0@5b117f, RVM: ruby-3.3.5) [gem]" level="application" />
@@ -42,6 +44,7 @@
     <orderEntry type="library" scope="PROVIDED" name="rack-protection (v4.0.0, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rack-session (v2.0.0, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rackup (v2.1.0, RVM: ruby-3.3.5) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="radius (v0.7.5, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="redis (v5.2.0, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="redis-client (v0.22.2, RVM: ruby-3.3.5) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ruby2_keywords (v0.0.5, RVM: ruby-3.3.5) [gem]" level="application" />

@@ -4,7 +4,7 @@ require_relative 'mongo_common_util'
 require_relative 'rpc_common_util'
 require_relative 'ui_common_util'
 require_relative 'redis_common_util'
-
+require_relative 'common_func'
 module Common
   class C
     include Singleton
@@ -55,6 +55,6 @@ module Common
   end
 
   at_exit do
-    p $! unless $!.nil?
+    __p $! unless $!.nil?
   end
 end

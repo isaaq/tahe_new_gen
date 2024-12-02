@@ -1,3 +1,5 @@
+require_relative '../../lib/util/auth'
+
 class ApiController < Sinatra::Base
   helpers ApplicationHelper
   use Letsaboard::Aboard if defined? Letsaboard::Aboard

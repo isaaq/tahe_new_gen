@@ -43,4 +43,8 @@ class TestModel < Test::Unit::TestCase
     x = M[:店铺].query.to_all[0]
     __p x[:fk_b_contents][1][:content]
   end
+
+  def test_article
+    p M[:b_articles_hots].query({}).sort({ }).to_a
+  end
 end

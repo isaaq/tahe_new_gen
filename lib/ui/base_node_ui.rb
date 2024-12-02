@@ -1,4 +1,4 @@
-class BaseUI
+class BaseNodeUI
   attr_accessor :size, :properties, :shape, :flags, :redraw_on_mouse, :widgets_up, :widgets_start_y, :clip_area,
                 :resizable, :horizontal, :slots, :title_color, :shape
 

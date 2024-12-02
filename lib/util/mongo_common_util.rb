@@ -133,7 +133,7 @@ module MongoCommonUtil
   end
 
   def method_missing(m, *_args)
-    __p "missing #{m}"
+    __p "missing #{m} #{_args}"
   end
 
   def gen_sample_ui_code; end
@@ -229,7 +229,7 @@ module MongoCommonUtil
   # @param [Hash] qry
   def mongo_parse_query!(qry)
     # 全局搜索
-    nil unless qry.has_key?(:_global_search_str)
+    nil unless qry&.has_key?(:_global_search_str)
 
     # 角色权限
     # Common::C[:auto_role_query]

@@ -25,6 +25,10 @@ GEM
     concurrent-ruby (1.3.3)
     connection_pool (2.4.1)
     drb (2.2.1)
+    faraday (2.7.10)
+      faraday-net_http (>= 2.0, < 3.1)
+      ruby2_keywords (>= 0.0.4)
+    faraday-net_http (3.0.2)
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
     jwt (2.8.2)
@@ -68,6 +72,7 @@ GEM
     rackup (2.1.0)
       rack (>= 3)
       webrick (~> 1.8)
+    radius (0.7.5)
     redis (5.2.0)
       redis-client (>= 0.22.0)
     redis-client (0.22.2)
@@ -108,6 +113,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport
+  faraday
   jwt
   letsaboard!
   mongo
@@ -117,6 +123,7 @@ DEPENDENCIES
   opal-sprockets
   puma
   rackup
+  radius
   redis
   rubyzip
   sinatra
