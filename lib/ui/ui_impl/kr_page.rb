@@ -1,2 +1,0 @@
-class KrPage
-end

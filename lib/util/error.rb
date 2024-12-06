@@ -1,3 +1,0 @@
-class CommonError < StandardError
-
-end

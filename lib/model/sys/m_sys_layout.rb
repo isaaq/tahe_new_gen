@@ -1,3 +1,0 @@
-class MSysLayout
-
-end

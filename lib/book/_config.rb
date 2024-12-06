@@ -1,1 +1,0 @@
-load_files File.dirname(__FILE__)
