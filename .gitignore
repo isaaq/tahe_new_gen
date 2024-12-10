@@ -58,9 +58,9 @@ Capfile
 *.gemspec
 
 # 忽略TypeScript和JavaScript生成的文件
-dist/
-build/
-lib/
+web/*/dist/
+web/*/build/
+web/*/lib/
 tsconfig.json
 tslint.json
 eslintignore
