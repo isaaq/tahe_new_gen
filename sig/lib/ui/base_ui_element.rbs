@@ -1,0 +1,18 @@
+class BaseUIElement
+  @impl_type: untyped
+
+  attr_accessor impl_type: untyped
+
+  attr_accessor ui: untyped
+
+  attr_accessor style: untyped
+
+  attr_accessor script: untyped
+
+  def initialize: () -> void
+
+  def output: -> String
+
+  # @param [Object] type
+  def set_type: (Symbol type) -> void
+end
