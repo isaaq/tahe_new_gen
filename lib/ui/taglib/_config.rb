@@ -1,0 +1,11 @@
+require_relative 'common/tag_library'
+require_relative 'common/tag_context'
+require_relative 'common/tag_parser'
+require_relative 'tags/helpers/tag_helper'
+require_relative 'tags/helpers/kr_tag_helper'
+require_relative 'tags/helpers/lay_ui_tag_helper'
+require_relative 'tags/tag_library_layui'
+
+require_relative 'tags/tag_library_kr'
+require 'erb'
+# require 'erb/compiler'
