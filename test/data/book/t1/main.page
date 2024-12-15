@@ -1,0 +1,17 @@
+#{
+    type: page
+    page_type: xy
+
+}
+#tree:{
+    aaaaa:
+       - bbbbbb
+       - cccccc
+       - dddddd
+}
+
+aaaaa:{
+    x: 50
+    y: 50
+
+}

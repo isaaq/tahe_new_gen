@@ -1,0 +1,2 @@
+class MPerson
+end
