@@ -71,9 +71,9 @@ eslintconfig
 *.tsx
 
 # 忽略测试生成的文件
-coverage/
-spec/
-test/
+web/*/coverage/
+web/*/spec/
+web/*/test/
 *.spec.js
 *.test.js
 *.spec.ts
