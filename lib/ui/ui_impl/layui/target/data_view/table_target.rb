@@ -14,6 +14,7 @@ class TableTarget < LayuiElementTarget
     vals.map { |key, value| "#{key}=\"#{value}\"" }.join(' ')
   end
 
+
   def output_target
     if @tag['objtree']
       str = @tag['objtree'].gsub(/\/\/\[(.+?)\]\/\//, "\\1")
@@ -21,7 +22,7 @@ class TableTarget < LayuiElementTarget
       cols = json['col']
       
     else
-
+      # TODO 没有objtree的话 需要解析标签
     end
   end
 end

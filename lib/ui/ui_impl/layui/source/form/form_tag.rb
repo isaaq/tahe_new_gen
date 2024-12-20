@@ -2,7 +2,7 @@
 
 class FormTag < LayuiElement
     def elename
-        'form'
+        'f'
     end
 
 

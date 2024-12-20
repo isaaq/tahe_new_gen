@@ -48,7 +48,7 @@ class UIPage
 
   def server_compile(source, b, layout)
     clz = Object.const_get("TagLibrary#{@type.capitalize}")
-    o = clz.parse(source, prefix: @type.to_s)
+    o = clz.parse(source)
 
     if layout.nil?
       o2 = ERB.new(o)

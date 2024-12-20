@@ -20,6 +20,10 @@ end
 module LayUITagHelper
   include TagHelper
 
+  def self.extended(base)
+    # p base
+  end
+
   # def _C
   #   Util.find_var('@_C')
   # end

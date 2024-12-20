@@ -4,26 +4,69 @@ require_relative '../../../../util/common_func'
 
 module TagHelper
   include Common
-  def kr_id(tag)
-    tag.attr['id'] || "#{tag.name}_#{gen_id}"
-  end
 
-  def make_ctx(tag, id = nil, parent_id = nil)
-    tag.attr['id'] = id unless id.nil?
-    @context ||= {}
-    if !id.nil? && parent_id.nil?
-      @context[id.to_sym] ||= []
-      # TODO: 给子元素添加元数据
-      @context[id.to_sym] = { type: tag.name }.merge(tag.attr.transform_keys(&:to_sym))
+  module RegTag
+    # 为 tag 生成 id 的方法
+    def kr_id(tag)
+      tag.attr['id'] || "#{tag.name}_#{gen_id}"
     end
-    return if parent_id.nil?
+
+    # 更新上下文的方法
+    def make_ctx(tag, id = nil, parent_id = nil)
+      tag.attr['id'] = id unless id.nil?
+      @context ||= {}
+      if !id.nil? && parent_id.nil?
+        @context[id.to_sym] ||= []
+        @context[id.to_sym] = { type: tag.name }.merge(tag.attr.transform_keys(&:to_sym))
+      end
+      return if parent_id.nil?
 
       @context[parent_id.to_sym][tag.name.to_sym] ||= []
       @context[parent_id.to_sym][tag.name.to_sym] << { type: tag.name }.merge(tag.attr.transform_keys(&:to_sym))
+    end
+
+    # 生成目标对象的方法
+    def make_target(tag, prefix, children = nil)
+      Object.const_get(prefix.to_s.capitalize + 'Transformer').trans(tag, @context, children)
+    end
+
+    # 注册根级标签
+    def register_root_tag(type, *names)
+      names.each do |name|
+        tag name do |tg|
+          setup_root_tag(tg, type)
+        end
+      end
+    end
+
+    # 注册子级标签
+    def register_child_tag(type, *names)
+      names.each do |name|
+        tag name do |tg|
+          setup_parent_tag(tg, type)
+        end
+      end
+    end
+
+    # 设置根级标签的逻辑
+    def setup_root_tag(tag, type)
+      id = tag.attr['id'] || "#{tag.name}_#{SecureRandom.hex(4)}"
+      make_ctx(tag, id)
+      make_target(tag, type, tag.expand)
+    end
+
+    # 设置子级标签的逻辑
+    def setup_parent_tag(tag, type)
+      parent_id = tag.parent['id']
+      id = tag.attr['id'] || "#{tag.name}_#{SecureRandom.hex(4)}"
+      make_ctx(tag, id, parent_id)
+      make_target(tag, type, tag.expand)
+    end
   end
 
-  def make_target(tag, prefix, children = nil)
-    Object.const_get(prefix.to_s.capitalize + 'Transformer').trans(tag, @context, children)
+  # 自动扩展功能
+  def self.included(base)
+    base.include RegTag
   end
 end
 

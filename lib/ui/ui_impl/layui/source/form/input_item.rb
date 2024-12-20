@@ -13,7 +13,7 @@ class InputItem < LayuiElement
   end
 
   def elename
-    'input'
+    'i'
   end
 
   def props
@@ -25,6 +25,12 @@ class InputItem < LayuiElement
       value: @value
     }
     vals.merge!(form_additional_attr) if form_additional_attr
+    # merge field的属性
+    instance_variables.each do |var|
+      next if [:@id, :@children, :@object_tree, :@tag, :@context].include?(var)
+      var_name = var.to_s.delete('@').to_sym
+      vals[var_name] = instance_variable_get(var) unless instance_variable_get(var).nil?
+    end
     vals.reject! { |_, v| v.nil? || v.empty? }
     vals.map { |key, value| "#{key}=\"#{value}\"" }.join(' ')
   end
