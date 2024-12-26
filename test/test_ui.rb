@@ -37,8 +37,6 @@ class TestModel < Test::Unit::TestCase
       </kr:page>
     CODE
     code = UIPage.new(:kr).parse_code(code)
-    # puts code
-    # puts "=========="
     code2 = UIPage.new(:layui).parse_code(code)
     puts code2
   end 

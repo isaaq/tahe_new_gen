@@ -30,8 +30,7 @@ class UIPage
   private
 
   def front_compile(code)
-    kr_del_objtree!(code)
-    code.gsub(/#([^{]+?)\{.*?#\}/m) do |_m|
+    code.gsub!(/#([^{]+?)\{.*?#\}/m) do |_m|
       key = $1.strip
       if @_kr_ui_scope_var.key?(key.to_sym)
         replacement_code, method = @_kr_ui_scope_var[key.to_sym]
@@ -46,6 +45,8 @@ class UIPage
         ""
       end
     end
+    kr_del_objtree!(code) if @type != :kr
+    code
   end
 
   def server_compile(source, b, layout)

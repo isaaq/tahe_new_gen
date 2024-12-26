@@ -18,12 +18,16 @@ class FormTarget < LayuiElementTarget
       json = kr_get_objtree(@tag['objtree'])
 
       <<~CODE
-        <form class="layui-form" lay-filter="#{json['id']}">
+        <form class="layui-form" lay-filter="#{json[:id]}">
         #{tag.expand}
         </form>
       CODE
     else
-      "123"
+      <<~CODE
+        <form class="layui-form" lay-filter="#{tag['id']}">
+        #{tag.expand}
+        </form>
+      CODE
       # TODO 没有objtree的话 需要解析标签
     end
   end
