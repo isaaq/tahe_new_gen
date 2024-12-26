@@ -85,6 +85,7 @@ module Radius
 
   class Scanner
     def operate(prefix, data)
+      data = data.force_encoding('UTF-8')  # Force UTF-8 encoding
       data = Radius::OrdString.new data
       @nodes = ['']
       

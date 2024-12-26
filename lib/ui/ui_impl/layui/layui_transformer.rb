@@ -10,10 +10,10 @@ class LayuiTransformer
       ele.context = ctx
       # ele.object_tree = fnd
       ele.children = children
+      ele.output
     else
       __p tag.name
       throw
     end
-    ele.output
   end
 end

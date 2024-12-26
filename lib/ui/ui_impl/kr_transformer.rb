@@ -2,7 +2,7 @@
 
 class KrTransformer
   include Common
-  DICT = { col: :TableColItem, table: :TableItem, form: :FormTag, input: :InputItem }
+  DICT = { col: :TableColItem, table: :TableItem, form: :FormTag, input: :InputItem, page: :PageItem }
   def self.trans(tag, ctx, children = nil)
     # TODO: kr tag -> layui tag 策略模板
     # 这里应该读取NodeEditor编辑过的内容
@@ -24,9 +24,9 @@ class KrTransformer
       ele.context = ctx
       ele.object_tree = fnd
       ele.children = children
+      ele.output
     else
       __p "未找到#{tag.name}对应的类"
     end
-    ele&.output
   end
 end

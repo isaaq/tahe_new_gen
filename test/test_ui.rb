@@ -13,11 +13,30 @@ class TestModel < Test::Unit::TestCase
         <kr:input lbl="账号" name="username" is_required="true"/>
       </kr:form>
     CODE
-    # code = UIPage.new(:kr).parse(code)
+    code = UIPage.new(:kr).parse(code)
     # code = "//[{\"type\":\"form\",\"id\":\"form_8fe2f66a\",\"input\":[{\"type\":\"input\",\"lbl\":\"账号\",\"name\":\"username\",\"is_required\":\"true\",\"id\":\"input_017e9583\"}]}]//\n<l:f>\n  //[null]//\n<l:i name=\"username\" lbl=\"账号\" is_required=\"true\" />\n</l:f>\n\n<l:t>\n</l:t>\n"
-    code = "<l:f></l:f>"
+    # code = "<l:f></l:f>"
     code2 = UIPage.new(:layui).parse(code)
-    p code2
+    puts code2
   end
+
+    ##
+    # 整体页面测试
+    # layui的页面分为两部分
+    # 1. 布局部分
+    # 2. 代码部分
+    # 这两部分分别输出到对应的位置才行, 所以需要标记用以注册位置
+    # @see /Users/isaac/codes/tahe/tahe_new_gen/test/data/web/t1.html 为测试页面   
+    # 
+  def test_page
+    code = <<~CODE
+      <kr:page layout="test/data/web/layout.html">
+        <kr:input lbl="账号" name="username" is_required="true"/>
+      </kr:page>
+    CODE
+    code = UIPage.new(:kr).parse(code)
+    code2 = UIPage.new(:layui).parse(code)
+    puts code2
+  end 
 
 end

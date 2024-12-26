@@ -1,10 +1,14 @@
+require_relative '../util/common_func'
+
 class UIPage
+  include Common
   attr_accessor :_kr_ui_scope_var, :type, :context
 
   def initialize(type)
     @_kr_ui_scope_var = {}
     @type = type
     @page = Object.const_get("#{type.capitalize}Page").new
+    @processing_layout = false
   end
 
   ##
@@ -26,22 +30,19 @@ class UIPage
   private
 
   def front_compile(code)
-    code.gsub(/#(.+?)\{\s*(.+?)\s*#\}|#(.+?)\{\s*(.+?)\s*\}/) do |_m|
-      unless ::Regexp.last_match(1).nil?
-        if @_kr_ui_scope_var.key?(::Regexp.last_match(1).to_sym)
-          code, method = @_kr_ui_scope_var[::Regexp.last_match(1).to_sym]
-          if method == :append
-            "#{::Regexp.last_match(2)}\n#{code}\n"
-          elsif ::Regexp.last_match(1)[0] == :prepend
-            "#{code}\n#{::Regexp.last_match(2)}\n"
-          else
-            code
-          end
+    code.gsub(/#([^{]+?)\{.*?#\}/m) do |_m|
+      key = $1.strip
+      if @_kr_ui_scope_var.key?(key.to_sym)
+        replacement_code, method = @_kr_ui_scope_var[key.to_sym]
+        if method == :append
+          "#{replacement_code}\n"
+        elsif method == :prepend
+          "#{replacement_code}\n"
         else
-          ::Regexp.last_match(2).to_s
+          replacement_code
         end
       else
-        ::Regexp.last_match(2).to_s
+        ""
       end
     end
   end
@@ -49,15 +50,21 @@ class UIPage
   def server_compile(source, b, layout)
     clz = Object.const_get("TagLibrary#{@type.capitalize}")
     o = clz.parse(source)
-
-    if layout.nil?
+    layout = clz.context.globals.layout
+    
+    if layout.nil? || @processing_layout
       o2 = ERB.new(o)
       output = o2.result(b)
     else
-      o2 = parse(layout) do
-        ERB.new(o).result(b)
+      @processing_layout = true
+      begin
+        o2 = parse(layout) do
+          ERB.new(o).result(b)
+        end
+        output = o2
+      ensure
+        @processing_layout = false
       end
-      output = o2
     end
     output
   end

@@ -18,4 +18,13 @@ module Common
   def gen_id
     SecureRandom.base64(8).gsub("/", "_").gsub(/[=+$]/, "")
   end
+
+  def kr_parse_objtree(tree)
+    tree.gsub(/\/\/\[(.+?)\]\/\//, "\\1")
+  end
+
+  def kr_get_objtree(tree)
+    match = tree.match(/\/\/\[(.+?)\]\/\//)
+    match.nil? ? nil : JSON.parse(match[1], { symbolize_names: true })
+  end
 end

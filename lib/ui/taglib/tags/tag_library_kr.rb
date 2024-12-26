@@ -12,7 +12,11 @@ class TagLibraryKr < Tags::TagLibrary
     "<%parse_reg_area('global_func','a=1;b=2', :append)%>"
   end
 
-  register_root_tag :kr, :table, :form
+  tag :test3 do |_tag|
+    
+  end
+
+  register_root_tag :kr, :table, :form, :page
   register_child_tag :kr, :col, :input
  
 end

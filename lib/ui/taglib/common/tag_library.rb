@@ -51,7 +51,9 @@ module Tags
       end
       tag_prefix = options.delete(:prefix)
       parser = TagParser.new(context, :tag_prefix => tag_prefix || @tag_prefix)
-      parser.parse(document)
+      o = parser.parse(document)
+      @@context = parser.context
+      o
     end
 
     def self.build_tags(&block)

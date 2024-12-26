@@ -1,6 +1,7 @@
 class TableTarget < LayuiElementTarget
   attr_accessor :tag, :context, :childrem, :elem, :url, :cols, :data, :id, :toolbar, :defaultToolbar, :width, :height, :maxHeight, :cellMinWidth,
                 :cellMaxWidth, :lineStyle, :className, :css, :cellExpandedMode, :cellExpandedWidth, :escape, :totalRow, :page
+  include Common
 
   def elename
       't-table'
@@ -17,7 +18,7 @@ class TableTarget < LayuiElementTarget
 
   def output_target
     if @tag['objtree']
-      str = @tag['objtree'].gsub(/\/\/\[(.+?)\]\/\//, "\\1")
+      str = kr_parse_objtree(@tag['objtree'])
       json = JSON.parse(str)
       cols = json['col']
       
