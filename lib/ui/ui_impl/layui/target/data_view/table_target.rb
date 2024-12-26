@@ -18,8 +18,7 @@ class TableTarget < LayuiElementTarget
 
   def output_target
     if @tag['objtree']
-      str = kr_parse_objtree(@tag['objtree'])
-      json = JSON.parse(str)
+      json = kr_get_objtree(@tag['objtree'])
       cols = json['col']
       
     else

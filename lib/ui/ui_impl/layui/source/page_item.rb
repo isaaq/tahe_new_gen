@@ -9,19 +9,19 @@ class PageItem < LayuiElement
     if File.exist?(tag['layout'])
       tag.context.globals.layout = File.read(tag['layout'])
     end
-
+    @view = tag.expand
   end
 
   def output_tag
     out = <<~EOF
-    <%parse_reg_area('global_view','a=1;b=2', :append)%>
-    <%parse_reg_area('global_script','a=3;b=4', :append)%>
-    <div class="layui-container" style="margin-top: 20px;">
-      #global_view{
+      <%parse_reg_area('global_view','#{@view}', :append)%>
+      <%parse_reg_area('global_script','#{@script}', :append)%>
+      <div class="layui-container" style="margin-top: 20px;">
+        #global_view{
+        #}
+      </div>
+      #global_script{
       #}
-    </div>
-    #global_script{
-    #}
     EOF
   end
 end

@@ -19,8 +19,8 @@ module Common
     SecureRandom.base64(8).gsub("/", "_").gsub(/[=+$]/, "")
   end
 
-  def kr_parse_objtree(tree)
-    tree.gsub(/\/\/\[(.+?)\]\/\//, "\\1")
+  def kr_del_objtree!(tree)
+    tree.gsub!(/\/\/\[(.+?)\]\/\//, "")
   end
 
   def kr_get_objtree(tree)

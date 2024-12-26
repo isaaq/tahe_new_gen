@@ -21,7 +21,7 @@ class UIPage
     @context[key] = value
   end
 
-  def parse(source = @page.default_page, b = binding, layout: nil)
+  def parse_code(source = @page.default_page, b = binding, layout: nil)
     layout = @page.default_layout if layout == :default
     front_code = server_compile(source, b, layout)
     front_compile(front_code)
@@ -30,6 +30,7 @@ class UIPage
   private
 
   def front_compile(code)
+    kr_del_objtree!(code)
     code.gsub(/#([^{]+?)\{.*?#\}/m) do |_m|
       key = $1.strip
       if @_kr_ui_scope_var.key?(key.to_sym)
@@ -51,14 +52,13 @@ class UIPage
     clz = Object.const_get("TagLibrary#{@type.capitalize}")
     o = clz.parse(source)
     layout = clz.context.globals.layout
-    
-    if layout.nil? || @processing_layout
+    if @type != 'kr' && (layout.nil? || @processing_layout)
       o2 = ERB.new(o)
       output = o2.result(b)
     else
       @processing_layout = true
       begin
-        o2 = parse(layout) do
+        o2 = parse_code(layout) do
           ERB.new(o).result(b)
         end
         output = o2

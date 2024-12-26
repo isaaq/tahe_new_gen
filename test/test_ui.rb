@@ -31,11 +31,15 @@ class TestModel < Test::Unit::TestCase
   def test_page
     code = <<~CODE
       <kr:page layout="test/data/web/layout.html">
-        <kr:input lbl="账号" name="username" is_required="true"/>
+        <kr:form>
+          <kr:input lbl="账号" name="username" is_required="true"/>
+        </kr:form>
       </kr:page>
     CODE
-    code = UIPage.new(:kr).parse(code)
-    code2 = UIPage.new(:layui).parse(code)
+    code = UIPage.new(:kr).parse_code(code)
+    # puts code
+    # puts "=========="
+    code2 = UIPage.new(:layui).parse_code(code)
     puts code2
   end 
 

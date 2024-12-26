@@ -2,10 +2,11 @@
 
 class InputTarget < LayuiElementTarget
     def elename
-        'form'
+        'f'
     end
 
-    def output
-        
+    def output_target
+        tag.attributes
+        "<input />"
     end
 end 

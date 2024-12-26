@@ -60,7 +60,7 @@ module TagHelper
       parent_id = tag.parent['id']
       id = tag.attr['id'] || "#{tag.name}_#{SecureRandom.hex(4)}"
       make_ctx(tag, id, parent_id)
-      make_target(tag, type, tag.expand)
+      make_target(tag, type)
     end
   end
 
@@ -90,7 +90,7 @@ module Radius
       @nodes = ['']
       
       re = scanner_regex(prefix)
-      if md = re.match(data)      
+      if md = re.match(data)
         remainder = ''  
         while md
           start_tag, attributes, self_enclosed, end_tag = $1, $2, $3, $4
@@ -100,10 +100,10 @@ module Radius
           pos = md.begin(0)
           attrs = parse_attributes(attributes)
           # 找到匹配位置之前的所有文本
-          preceding_text = data[(pos<200?0:pos-200)...pos]
+          preceding_text = data[(pos<200?200:pos-200)...pos]
           # 通过正则找到匹配前的最后一行
-          previous_line = preceding_text[/.*\n?$/]&.chomp
-          attrs['objtree'] = previous_line if previous_line.match(/\/\/\[.+?\]\/\//)
+          previous_line = preceding_text&.split(/\n/)&.last
+          attrs['objtree'] = previous_line if previous_line&.match(/\/\/\[.+?\]\/\//)
 
           # save the part before the current match as a string node
           @nodes << (attrs['objtree'] ? md.pre_match.gsub(previous_line, '') : md.pre_match)
