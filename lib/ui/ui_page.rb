@@ -45,7 +45,7 @@ class UIPage
         ""
       end
     end
-    kr_del_objtree!(code) if @type != :kr
+    # kr_del_objtree!(code) if @type != :kr
     code
   end
 

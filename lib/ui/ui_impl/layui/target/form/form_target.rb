@@ -10,7 +10,7 @@ class FormTarget < LayuiElementTarget
   ##
   # 输出目标
   # layui表单分为两部分
-  # 1. 布局部分
+  # 1. 展示部分, TODO 得考虑布局
   # 2. 代码部分
   # 这两部分分别输出到对应的位置才行
   def output_target
