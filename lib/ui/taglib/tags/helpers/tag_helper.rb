@@ -90,26 +90,25 @@ module Radius
       @nodes = ['']
       
       re = scanner_regex(prefix)
+      last_pos = 0
       if md = re.match(data)
         remainder = ''  
         while md
           start_tag, attributes, self_enclosed, end_tag = $1, $2, $3, $4
-
           flavor = self_enclosed == '/' ? :self : (start_tag ? :open : :close)
-          
-          pos = md.begin(0)
           attrs = parse_attributes(attributes)
+          pos = data.index(md[0], last_pos)
           # 找到匹配位置之前的所有文本
-          preceding_text = data[(pos<200?200:pos-200)...pos]
+          preceding_text = data[0...pos]
+          last_pos = pos||0 + md[0].length
           # 通过正则找到匹配前的最后一行
           previous_line = preceding_text&.split(/\n/)&.last
           attrs['objtree'] = previous_line if previous_line&.match(/\/\/\[.+?\]\/\//)
-
           # save the part before the current match as a string node
           @nodes << (attrs['objtree'] ? md.pre_match.gsub(previous_line, '') : md.pre_match)
           # save the tag that was found as a tag hash node
           @nodes << {:prefix=>prefix, :name=>(start_tag || end_tag), :flavor => flavor, :attrs => attrs}
-          
+
           # remember the part after the current match
           remainder = md.post_match
           # see if we find another tag in the remaining string
