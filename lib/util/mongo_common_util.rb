@@ -42,8 +42,7 @@ module MongoCommonUtil
     # path = "./test/data/dsl/model/#{key}.m"
     # Global.instance._user_models.find {|f| f}
     models = ((Global.instance._sys_models || []) + Global.instance._user_models).flatten(1)
-
-    found = models.find { |f| f._name == key.to_s }
+    found = models.find { |f| f._name.to_s == key.to_s }
     if found.nil?
       table(key)
     else
