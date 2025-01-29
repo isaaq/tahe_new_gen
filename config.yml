@@ -20,3 +20,6 @@ log_err: 1
 
 appid: wx0cfb01512fa70f08
 appsecret: 2ac0138cfca822572cc252e32a2fc5c6
+
+JWT_ISSUER: me
+JWT_SECRET: zhiyue

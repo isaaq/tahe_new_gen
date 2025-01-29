@@ -1,25 +1,30 @@
 require_relative '../../lib/util/auth'
+require_relative '../../lib/util/jwt_auth'
 
 class ApiController < Sinatra::Base
+  # puts "=== Loading ApiController ==="
   helpers ApplicationHelper
   use Letsaboard::Aboard if defined? Letsaboard::Aboard
+  # puts "=== Loading JwtAuth middleware ==="
+  use JwtAuth
+  # puts "=== JwtAuth middleware loaded ==="
 
   set :root, Sinatra::Application.settings.root
   set :public_folder, File.expand_path("#{root}/web", __FILE__)
   set :protection, except: %i[frame_options json_csrf]
 
-  # register to cloud
-
-  services_list = M[:sys_settings].query({ name: 'services' }).to_a[0]
-  services = services_list[:value]
-  found = services.find { |f| f[:ip] == C[:ip] && f[:name] == C[:name] }
-  if found.nil?
-    services << { ip: C[:ip], name: C[:name], port: C[:port], status: 1 }
-  else
-    found[:status] = 1
+  configure do
+    services_list = M[:sys_settings].query({ name: 'services' }).to_a[0]
+    services = services_list[:value]
+    found = services.find { |f| f[:ip] == C[:ip] && f[:name] == C[:name] }
+    if found.nil?
+      services << { ip: C[:ip], name: C[:name], port: C[:port], status: 1 }
+    else
+      found[:status] = 1
+    end
+    puts services_list
+    M[:sys_settings].update({ name: 'services' }, services_list)
   end
-  puts services_list
-  M[:sys_settings].update({ name: 'services' }, services_list)
 
   before do
     response.headers['Access-Control-Allow-Origin'] = '*'

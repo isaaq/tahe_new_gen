@@ -1,4 +1,13 @@
 module Common
+  def revert_hash_from_string(str)
+    # p str
+    # if str[0] != '{'
+    #   raise "Unexpected style"
+    # end
+    lines = str.split(';')
+    hash = lines.inject({}) { |t, i| sp = i.gsub(/"| /, '').split('='); t[sp[0].to_sym] = sp[1]; t }
+  end
+
   def parse_params(ps)
     if ps.is_a?(String)
       h = {}

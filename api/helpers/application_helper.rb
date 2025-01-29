@@ -16,6 +16,18 @@ module ApplicationHelper
     o
   end
 
+  def _user
+    env[:user]
+  end
+
+  def _roles
+    env[:user]['roles']
+  end
+
+  def _scopes
+    env[:scopes]
+  end
+
   def make_resp(data, code = 0, msg = 'success')
     { code: code, msg: msg, data: data || {} }.to_json
   end

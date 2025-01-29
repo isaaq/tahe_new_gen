@@ -1,7 +1,7 @@
 require_relative 'db_mongo'
 
 module MongoCommonUtil
-  attr_accessor :load_path
+  attr_accessor :load_path, :user
 
   def common_data
     {
@@ -235,7 +235,7 @@ module MongoCommonUtil
 
     # 角色权限
     # Common::C[:auto_role_query]
-
+    
     # 模型的额外属性
     # __p @db.model._fk
   end

@@ -1,5 +1,5 @@
 def dev
-  false
+  true
 end
 
 def __p(obj)

@@ -47,4 +47,8 @@ class TestModel < Test::Unit::TestCase
   def test_article
     p M[:b_articles_hots].query({}).sort({ }).to_a
   end
+
+  def test_role
+    p M[:店铺].query.to_a
+  end
 end
