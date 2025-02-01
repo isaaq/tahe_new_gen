@@ -1,5 +1,6 @@
 require 'yaml'
 require 'singleton'
+require_relative '../../_system'
 require_relative 'mongo_common_util'
 require_relative 'rpc_common_util'
 require_relative 'ui_common_util'
