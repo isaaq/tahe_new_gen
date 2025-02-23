@@ -17,6 +17,7 @@ redis:
 # all=9, insert_update_del=3, update_del=2, del=1, none=0
 audit_level: 9
 log_err: 1
+auto_role_query: 1
 
 appid: wx0cfb01512fa70f08
 appsecret: 2ac0138cfca822572cc252e32a2fc5c6
