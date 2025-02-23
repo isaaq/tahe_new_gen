@@ -5,7 +5,7 @@ class WSController < ApiController
   #  use JwtAuth
 
   def save_msg(id, frominfo)
-    f = M[:chats].find(uid: id).to_a[0]
+    f = M[:chats].find_by(uid: id)
     if f.nil?
       f = {
         uid: id,
@@ -20,7 +20,7 @@ class WSController < ApiController
            read: false}
         ],
       }
-      M[:chats].insert_one(f)
+      M[:chats].add(f)
     end
     # 开始更新消息
     unless frominfo[:uid] == env[:user]['uid']
@@ -37,7 +37,7 @@ class WSController < ApiController
       f[:chats][f_c_index_you][:unread] += 1
       f[:chats][f_c_index_you][:updated] = Time.now
       f[:chats][f_c_index_you][:read] = false
-      M[:chats].find_one_and_update({uid:f[:uid]}, f)
+      M[:chats].update({uid:f[:uid]}, f)
     end
     f
   end
@@ -58,10 +58,10 @@ class WSController < ApiController
     # 存我也存你
     # 我是谁, 先找我
     p json
-    f_member_me = M[:userinfos].find(uid: json['from_id'])&.to_a[0]
+    f_member_me = M[:userinfos].find_by(uid: json['from_id'])
 
     # 对方是谁
-    f_member_to = M[:userinfos].find(uid: json['to_id'])&.to_a[0]
+    f_member_to = M[:userinfos].find_by(uid: json['to_id'])
     # 给对方(你)的
     f_you = save_msg(json['to_id'], f_member_me)
     # 给自己的(我)
@@ -74,7 +74,7 @@ class WSController < ApiController
       icon: f_member_me[:userInfo][:avatarUrl],
       msg: json['content']
     }
-    M[:chat_msgs].insert_one(data)
+    M[:chat_msgs].add(data)
     # 再存聊天内容表
 
   end
@@ -135,7 +135,7 @@ class WSController < ApiController
               when 'PING' then
                 f_socket = settings.sockets.find { |f| f.id == j['from_id'] }
                 f_socket.ws.send({cmd: 'PING', msg: 'ok'}.to_json)
-                nts = M[:chat_notices].find(read: 0).to_a
+                nts = M[:chat_notices].find_by(read: 0)
                 nts.each do |e|
                   if e[:to_uid] ==  j['from_id']
                     f_socket.ws.send({cmd: 'NOTICE', data: e}.to_json)
@@ -148,7 +148,7 @@ class WSController < ApiController
                 warn('一般消息')
 
                 # if j['to_id'] =~ /^[\u4e00-\u9fa5]{1}[A-Z]{1}[A-Z_0-9]{5}$/
-                #   f = M[:carteams].find(openid: {'$in': [j['from_id']]}).to_a[0]
+                #   f = M[:carteams].query(openid: {'$in': [j['from_id']]}).to_a[0]
                 #   unless f.nil?
                 #     f[:cars].each do |e|
                 #       e[:pre_driver].each do |d|
@@ -162,7 +162,7 @@ class WSController < ApiController
                 # end
 
                 f_socket = settings.sockets.find { |f| f.id == j['to_id'] }
-                f_member = M[:userinfos].find(uid: j['to_id']).to_a[0]
+                f_member = M[:userinfos].find_by(uid: j['to_id'])
 
                 j['from_openid'] = j['openid']
                 j['to_openid'] = j['to_openid']
@@ -177,10 +177,10 @@ class WSController < ApiController
                 # 广播
                 warn('广播消息')
                 team_id = j['to_id']
-                team = M[:carteams].find(_id: team_id.to_objid).to_a[0]
+                team = M[:carteams].find_by(_id: team_id.to_objid)
                 unless team.nil?
                   team[:cars].each do |e|
-                    f = settings.sockes.find { |f| f.id == e[:member_id].to_s }
+                    f = settings.sockets.find { |f| f.id == e[:member_id].to_s }
                     send_ws_msg(j, f)
                     # openurl("http://#{C['domain']}/wechat/notice/msg?openid=#{j['to_id']}")
                   end
@@ -188,7 +188,7 @@ class WSController < ApiController
               when 'broadcast' then
                 # 全服广播
                 warn('全服广播')
-                members = M[:members].find.to_a
+                members = M[:members].find_by
                 members.each do |e|
                   # 要排除我自己
                   f = settings.sockets.find { |f| f.id == e[:openid].to_s && e[:openid] != params['openid'] }
@@ -214,13 +214,13 @@ class WSController < ApiController
   # endregion
 
   get '/chat_info' do
-    M[:members].find(openid: params[:openid]).to_a[0].to_json
+    M[:members].find_by(openid: params[:openid]).to_json
   end
 
   get '/get_chat_list' do
     if !env[:user].nil?
       # p env[:user]['uid']
-      M[:chats].find(uid: env[:user]['uid']).to_a[0]&.to_resp
+      M[:chats].find_by(uid: env[:user]['uid']).to_resp
       # M[:chat_msgs].find(to_uid: env[:user]['uid']).to_a[0]&.to_resp
     else
       make_resp('', 'error', 20003)
@@ -229,13 +229,13 @@ class WSController < ApiController
 
   get '/get_notice_list' do
     if !env[:user].nil?
-      # notices = M[:chat_notices].find(uid: env[:user]['uid']).to_a
-      # infos = M[:chat_infos].find(uid: env[:user]['uid']).to_a
-      # systems = M[:chat_systems].find(uid: env[:user]['uid']).to_a
-      likes = M[:chat_notices].find(to_uid: env[:user]['uid'], type: 'like').to_a
-      fans = M[:chat_notices].find(to_uid: env[:user]['uid'], type: 'fans').to_a
-      discusses = M[:chat_notices].find(to_uid: env[:user]['uid'], type: 'discuss').to_a
-      systems = M[:chat_notices].find(to_uid: env[:user]['uid'], type: 'system').to_a
+      # notices = M[:chat_notices].query(uid: env[:user]['uid']).to_a
+      # infos = M[:chat_infos].query(uid: env[:user]['uid']).to_a
+      # systems = M[:chat_systems].query(uid: env[:user]['uid']).to_a
+      likes = M[:chat_notices].find_by(to_uid: env[:user]['uid'], type: 'like')
+      fans = M[:chat_notices].find_by(to_uid: env[:user]['uid'], type: 'fans')
+      discusses = M[:chat_notices].find_by(to_uid: env[:user]['uid'], type: 'discuss')
+      systems = M[:chat_notices].find_by(to_uid: env[:user]['uid'], type: 'system')
 
       ret = []
       ret << {type: 'like', content: likes[0], unread: likes.count { |c| c[:read] == 0 }}
@@ -251,14 +251,14 @@ class WSController < ApiController
   get '/chat_msgs_by_openid/:uid' do
     my_uid = env[:user]['uid']
     uid = params[:uid]
-    msgs = M[:chat_msgs].find("$or": [{
+    msgs = M[:chat_msgs].find_by("$or": [{
                                         from_uid: uid || 'guest',
                                         to_uid: my_uid
                                       }, {
                                         to_uid: uid || 'guest',
                                         from_uid: my_uid
-                                      }]).to_a
-    f = M[:chats].find(uid: my_uid).to_a[0]
+                                      }])
+    f = M[:chats].find_by(uid: my_uid)
     f_c_index = f[:chats].find_index { |f| f[:from_uid] == uid }
     if f_c_index.nil?
       # if my_uid != uid
@@ -267,23 +267,23 @@ class WSController < ApiController
     else
       f[:chats][f_c_index][:read] = true
       f[:chats][f_c_index][:unread] = 0
-      M[:chats].find_one_and_update({uid: my_uid}, f)
+      M[:chats].update({uid: my_uid}, f)
     end
     {cmd: 'MESSAGE', msgs: msgs}.to_resp
   end
 
   get '/chat_msgs_userinfos/:from_uid' do
     to_uid = env[:user]['uid']
-    from = M[:userinfos].find(uid: params[:from_uid].to_s).to_a[0]
-    to = M[:userinfos].find(uid: to_uid).to_a[0]
+    from = M[:userinfos].find_by(uid: params[:from_uid].to_s)
+    to = M[:userinfos].find_by(uid: to_uid)
     {from: from, to: to}.to_resp
   end
 
   get '/chat_msgs_clerkinfos/:from_uid' do
     to_uid = env[:user]['uid']
-    from = M[:clerks].find(_id: params[:from_uid].to_objid).to_a[0]
+    from = M[:clerks].find_by(_id: params[:from_uid].to_objid)
     from[:headimgurl] = from[:icon] || from[:avatarUrl]
-    to = M[:userinfos].find(uid: to_uid).to_a[0]
+    to = M[:userinfos].find_by(uid: to_uid)
     {from: from, to: to}.to_resp
   end
 
@@ -306,7 +306,7 @@ class WSController < ApiController
   # 以该客服的名义发一条消息给客户
   get '/chooseCustomer' do
     id = params[:id]
-    clerk = M[:clerk].find(_id: id.to_objid).to_a[0]
+    clerk = M[:clerk].find_by(_id: id.to_objid)
     frominfo = {
       to_id: id,
     }
@@ -316,7 +316,7 @@ class WSController < ApiController
 
   get '/chat_msgs_likeinfos/:id' do
     to_uid = env[:user]['uid']
-    to = M[:userinfos].find(uid: to_uid).to_a[0]
+    to = M[:userinfos].find_by(uid: to_uid)
     {
       from: {
         avatarUrl: 'like',
@@ -327,19 +327,19 @@ class WSController < ApiController
 
   get '/chat_msgs_discussinfos/:id' do
     uid = env[:user]['uid']
-    ul = M[:user_likes].find(uid: uid).to_a[0]
+    ul = M[:user_likes].find_by(uid: uid)
     ul[:likes].to_resp
   end
 
   get '/chat_msgs_fansinfos/:id' do
     uid = env[:user]['uid']
-    ul = M[:user_likes].find(uid: uid).to_a[0]
+    ul = M[:user_likes].find_by(uid: uid)
     ul[:likes].to_resp
   end
 
   get '/chat_msgs_systeminfos/:id' do
     uid = env[:user]['uid']
-    ul = M[:user_likes].find(uid: uid).to_a[0]
+    ul = M[:user_likes].find_by(uid: uid)
     ul[:likes].to_resp
   end
 end

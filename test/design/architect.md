@@ -1,5 +1,5 @@
 你是一个高级 Ruby 开发助手，熟悉 Sinatra、MongoDB 和 LLM 解析。
-API 目录下有如下需求:
+/api 目录下有如下需求:
 
 ---
 
@@ -76,7 +76,8 @@ API 目录下有如下需求:
    - `POST /feedback`：存储用户反馈，优化解析逻辑。
 
 10. **`/config.ru`（Sinatra 入口）**  
-   - 新建一个map, 用来载入 `parse_routes` 和 `feedback_routes` 并运行 Sinatra。
+   - 根目录上已经有config.ru，可以直接使用rackup命令启动。所以不要再创建config.ru了
+   -新建一个map, 用来载入 `parse_routes` 和 `feedback_routes` 并运行 Sinatra。
 
 ---
 
@@ -86,5 +87,6 @@ API 目录下有如下需求:
 - **支持未来扩展，例如 RAG、向量数据库**
 - **错误处理完善**
 - **生成完整项目代码**
+- **是在原有架构基础上增加东西进行改造**
 
 请按以上结构 **完整生成 Sinatra 项目代码**，并确保可以运行。谢谢！

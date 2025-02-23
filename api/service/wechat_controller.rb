@@ -30,10 +30,10 @@ class TaheController < ApiController
   end
 
   def get_price(snapinfo)
-    gs = M[:goods_snaps].find(_id: snapinfo[:snap_id].to_objid).to_a[0]
+    gs = M[:goods_snaps].query(_id: snapinfo[:snap_id].to_objid).to_a[0]
     num = snapinfo[:num]
     if gs[:snap_spec_value].nil?
-      g = M[:goods].find(_id: gs[:goods_id].to_objid).to_a[0]
+      g = M[:goods].query(_id: gs[:goods_id].to_objid).to_a[0]
       total = g[:price] * num
     else
       total = gs[:snap_spec_value][:price] * num
@@ -69,14 +69,14 @@ class TaheController < ApiController
       mch_id = C['mch_id']
       uid = env[:user]['uid']
       nonce_str = SecureRandom.hex
-      u = M[:userinfos].find(uid: uid).to_a[0]
-      order = M[:orders].find(_id: params[:orderid].to_objid).to_a[0]
+      u = M[:userinfos].query(uid: uid).to_a[0]
+      order = M[:orders].query(_id: params[:orderid].to_objid).to_a[0]
       total = order[:goods_snapshots].inject(0) do |t, i|
         t += get_price(i)
         t
       end
       order_no = "#{u[:uid]}-#{Time.current.to_i}"
-      M[:orders].find_one_and_update({ _id: params[:orderid].to_objid }, { '$set': { out_trade_no: order_no } })
+      M[:orders].update_one({ _id: params[:orderid].to_objid }, { '$set': { out_trade_no: order_no } })
       remote_ip = '127.0.0.1'
       # created_at = DateTime.now
       # expiration_at = DateTime.now + DateTime.new
@@ -170,11 +170,11 @@ class TaheController < ApiController
         userinfo['exp'] = 0
         userinfo['coin'] = 0
 
-        M[:b_users].add(userinfo)
+        M[:b_users].insert_one(userinfo)
         userinfo.to_resp
       else
         u.merge!(json)
-        M[:b_users].update({ openid: json['openid'] }, u)
+        M[:b_users].update_one({ openid: json['openid'] }, u)
         fetch_token(u)
       end
     end
@@ -196,7 +196,7 @@ class TaheController < ApiController
 
     post '/authphone' do
       uid = env[:user]['uid']
-      user = M[:userinfos].find(uid: uid).to_a[0]
+      user = M[:userinfos].query(uid: uid).to_a[0]
 
       json = JSON.parse(request.body.read)
       enc = Base64.decode64(json['encryptedData'])
@@ -210,9 +210,9 @@ class TaheController < ApiController
 
       ret = JSON.parse(cipher.update(enc) + cipher.final)
       phone = ret['phoneNumber']
-      user = M[:userinfos].find(uid: env[:user]['uid']).to_a[0]
+      user = M[:userinfos].query(uid: env[:user]['uid']).to_a[0]
       user[:phone] = phone
-      M[:userinfos].find_one_and_update({ uid: env[:user]['uid'] }, user)
+      M[:userinfos].update_one({ uid: env[:user]['uid'] }, user)
       raise('appid不匹配') if ret['watermark']['appid'] != C['appid']
 
       ok

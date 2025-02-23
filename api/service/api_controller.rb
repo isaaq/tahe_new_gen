@@ -34,6 +34,10 @@ class ApiController < Sinatra::Base
     status 200
   end
 
+  # 注册解析引擎路由
+  register ParseRoutes
+  register FeedbackRoutes
+
   after do
     _routes
   end

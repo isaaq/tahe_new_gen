@@ -24,3 +24,8 @@ appsecret: 2ac0138cfca822572cc252e32a2fc5c6
 
 JWT_ISSUER: me
 JWT_SECRET: zhiyue
+
+# LLM Service Configuration
+llm_api_endpoint: https://api.deepseek.com/v1/chat/completions
+llm_model: deepseek-chat
+llm_api_key: "sk-ba162e769e3b44a4bd9a42ab547e464f"  # 需要替换为实际的 API key
