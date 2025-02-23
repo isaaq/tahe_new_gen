@@ -68,6 +68,8 @@ module MongoCommonUtil
 
   def query(query_hash = {}, opts = {})
     mongo_parse_query!(query_hash)
+    # __p "query_hash #{query_hash}"
+    # __p "table #{@db.table}"
     qry = @db.db[@db.table].find(query_hash)
     qry.sort(opts[:sort]) unless opts[:sort].nil?
     @db.db.close
@@ -234,7 +236,11 @@ module MongoCommonUtil
     nil unless qry&.has_key?(:_global_search_str)
 
     # 角色权限
-    # Common::C[:auto_role_query]
+    if Common::C[:auto_role_query] == 1
+      unless @user.nil? || @user['roles'].nil?
+        qry.merge!({ '_meta.roles': { '$in': @user['roles'] } })
+      end
+    end
     
     # 模型的额外属性
     # __p @db.model._fk
