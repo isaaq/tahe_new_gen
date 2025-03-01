@@ -28,4 +28,7 @@ JWT_SECRET: zhiyue
 # LLM Service Configuration
 llm_api_endpoint: https://api.deepseek.com/v1/chat/completions
 llm_model: deepseek-chat
-llm_api_key: "sk-ba162e769e3b44a4bd9a42ab547e464f"  # 需要替换为实际的 API key
+llm_api_key: <%= ENV['LLM_API_KEY'] %>
+
+# Vector Service Configuration
+vector_api_key: <%= ENV['VECTOR_API_KEY'] %>

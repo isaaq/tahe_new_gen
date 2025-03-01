@@ -112,7 +112,7 @@ class PromptTemplateService
       PROMPT
 
       generate_sinatra_code: <<~PROMPT,
-        请根据以下自然语言描述，生成对应的Sinatra路由代码：
+        请根据以下自然语言描述，生成对应的Sinatra路由代码。
 
         需求描述：
         {{content}}
@@ -120,75 +120,55 @@ class PromptTemplateService
         代码上下文：
         {{context}}
 
-        要求：
+        必须严格遵循以下要求：
         1. 使用标准的Sinatra路由格式（get/post/put/delete）
-        2. 包含必要的参数验证和错误处理
-        3. 使用 M[:collection_name] 进行MongoDB操作
-        4. 使用 make_resp 或 ok 方法返回结果
-        5. 必须使用 get_json_body 获取 POST/PUT 请求的请求体
-        6. 必须使用 get_prop_from_token 获取用户信息
-        7. 遵循已有代码的模式和风格
-        8. 确保代码安全和性能
+        2. 必须包含以下关键代码模式：
+           - 使用 get_prop_from_token('uid') 获取用户ID
+           - 使用 M[:collection_name] 进行MongoDB操作
+           - 使用 get_json_body 获取POST/PUT请求的请求体
+           - 使用 make_resp 返回结果
+           - 使用 begin/rescue 进行错误处理
+        3. 必须包含以下错误代码：
+           - 40001: 参数错误
+           - 40100: 未登录
+           - 50000: 系统错误
 
-        示例代码格式：
+        示例代码格式（请严格参考）：
         ```ruby
         get '/api/v1/example' do
           begin
-            # 获取用户信息
+            # 获取用户信息（必须）
             user_id = get_prop_from_token('uid')
             return make_resp(nil, 'error', 40100) unless user_id
 
-            # 获取请求参数
+            # 获取分页参数（GET请求必须）
             page = (params['page'] || 1).to_i
             per_page = (params['per_page'] || 20).to_i
 
             # 构建查询条件
             query = { user_id: user_id }
             
-            # 执行查询
+            # 执行MongoDB查询（必须使用M[:collection]）
             data = M[:collection].query(query)
               .sort(created_at: -1)
               .skip((page - 1) * per_page)
               .limit(per_page)
               .to_a
 
-            # 返回结果
+            # 返回结果（必须使用make_resp）
             make_resp(data)
           rescue => e
-            make_resp(nil, 'error', 50000, e.message)
-          end
-        end
-
-        post '/api/v1/example' do
-          begin
-            # 获取用户信息
-            user_id = get_prop_from_token('uid')
-            return make_resp(nil, 'error', 40100) unless user_id
-
-            # 获取请求体
-            body = get_json_body
-            return make_resp(nil, 'error', 40001, '无效的请求体') unless body
-
-            # 添加记录
-            data = {
-              user_id: user_id,
-              content: body['content'],
-              created_at: Time.now
-            }
-            
-            M[:collection].add(data)
-            make_resp(data)
-          rescue => e
+            # 错误处理（必须）
             make_resp(nil, 'error', 50000, e.message)
           end
         end
         ```
 
         请确保生成的代码：
-        1. 包含错误代码（40001=参数错误, 40100=未登录, 50000=系统错误）
-        2. 包含所有必需的辅助方法调用（get_json_body, get_prop_from_token, make_resp）
-        3. 使用 begin/rescue 进行错误处理
-        4. 遵循示例代码的格式和风格
+        1. 严格遵循示例代码的格式和结构
+        2. 包含所有必需的辅助方法调用
+        3. 使用正确的错误代码
+        4. 包含适当的注释说明
       PROMPT
     }
   end

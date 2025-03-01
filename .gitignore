@@ -82,3 +82,7 @@ web/*/test/
 # 忽略其他不需要的文件
 README.md
 LICENSE
+
+# 环境变量文件
+.env
+!.env.example

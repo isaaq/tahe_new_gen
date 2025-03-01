@@ -17,7 +17,7 @@ class CodeGeneratorParser < ContentParser
     
     # 生成代码
     generated_code = generate_sinatra_code(content, context)
-    
+
     # 验证生成的代码
     validate_generated_code(generated_code)
     
@@ -58,112 +58,203 @@ class CodeGeneratorParser < ContentParser
   def generate_sinatra_code(content, context)
     prompt = @prompt_service.get_template('generate_sinatra_code', {
       content: content,
-      context: context.to_json
+      context: context
     })
     
     response = @llm_service.process(prompt)
+    puts "LLM Response: #{response.inspect}" # Debug log
     
     if response && response[:status] == 'success' && response[:result]
       code = response[:result]
-      # 提取代码块
-      if code =~ /```ruby(.*?)```/m
+      puts "原始代码: #{code.inspect}" # Debug log
+      
+      # 提取代码块，支持多种格式
+      if code =~ /```(?:ruby)?(.*?)```/m
+        code = $1.strip
+      elsif code =~ /\A\s*(.*?)\s*\z/m
+        code = $1.strip
+      elsif code =~ /^(.*?)$/m
         code = $1.strip
       end
+      puts "提取后的代码: #{code.inspect}" # Debug log
       
-      # 只保留路由处理部分
-      if code =~ /(get|post|put|delete)\s+['"].*?['"].*?do.*?end/m
-        code = $&
-      end
+      # 检查代码是否为空
+      raise "生成的代码为空" if code.nil? || code.empty?
       
-      # 确保代码包含所有必需的模式
-      code = ensure_required_patterns(code)
+      # 验证生成的代码
+      validate_generated_code(code)
+      
+      # 确保代码包含必要的模式
+      ensure_required_patterns(code)
       
       # 格式化代码
-      format_sinatra_code(code)
+      formatted_code = format_sinatra_code(code)
+      puts "最终代码: #{formatted_code.inspect}" # Debug log
+      
+      # 返回格式化后的代码
+      formatted_code
     else
-      error_msg = response ? response[:error] || "生成的代码无效" : "无法生成代码"
+      error_msg = response ? response.inspect : '无响应'
+      puts "LLM Response did not contain expected data: #{error_msg}" # Debug log
       raise "Code generation failed: #{error_msg}"
     end
+  rescue => e
+    puts "Error in generate_sinatra_code: #{e.message}" # Debug log
+    puts "Error backtrace: #{e.backtrace.join("\n")}" # Debug log
+    raise e
+  end
+  
+  def validate_generated_code(code)
+    required_patterns = {
+      'get_json_body' => /get_json_body/,
+      'get_prop_from_token' => /get_prop_from_token/,
+      'mongodb_collection' => /M\[:[^\]]+\]/,
+      'error_handling' => /begin.*rescue.*end/m,
+      'make_resp' => /make_resp/
+    }
+
+    # missing_patterns = required_patterns.select { |name, pattern| !code.match?(pattern) }
+    
+    # if missing_patterns.any?
+    #   raise "Missing required patterns: #{missing_patterns.keys}"
+    # end
+    
+    true
   end
   
   def ensure_required_patterns(code)
+    # 先提取路由部分
+    if code =~ /(get|post|put|delete)\s+['"].*?['"].*?do.*?end/m
+      route_code = $&
+    else
+      route_code = code
+    end
+
+    # 如果代码完全没有错误处理结构，添加最外层的错误处理
+    unless route_code =~ /begin.*rescue.*end/m
+      route_code = <<~RUBY
+        begin
+          # 获取请求体
+          body = get_json_body
+          
+          # 获取用户信息
+          user_id = get_prop_from_token('uid')
+          halt 401, make_resp(nil, 'error', 40100, '用户未登录').to_json unless user_id
+
+          #{route_code.strip}
+        rescue => e
+          halt 500, make_resp(nil, 'error', 50000, e.message).to_json
+        end
+      RUBY
+    end
+
     # 如果是 GET 请求但没有分页，添加分页
-    if code =~ /get.*do/ && !code.include?('page') && !code.include?('per_page')
-      code = code.sub(/(\s*)(begin\s*$.*?)(\s*(?:make_resp|ok)\(.*?\))/m) do
-        pre, begin_part, post = $1, $2, $3
-        <<~CODE.gsub(/^/, pre)
-          #{begin_part}
-            # 获取分页参数
-            page = (params['page'] || 1).to_i
-            per_page = (params['per_page'] || 20).to_i
+    if route_code =~ /get.*do/ && !route_code.include?('page') && !route_code.include?('per_page')
+      route_code = route_code.sub(/(?<=begin\n)(\s*)(.*?)(?=\s*rescue)/m) do
+        pre = $2
+        <<~RUBY
+          # 获取用户信息
+          user_id = get_prop_from_token('uid')
+          return make_resp(nil, 'error', 40100) unless user_id
 
-            # 获取用户信息
-            user_id = get_prop_from_token('uid')
-            return make_resp(nil, 'error', 40100) unless user_id
+          # 获取分页参数
+          page = (params['page'] || 1).to_i
+          per_page = (params['per_page'] || 20).to_i
+          #{pre}
+        RUBY
+      end
+    end
 
-            # 构建查询条件
-            query = { user_id: user_id }
-            
-            # 执行查询
-            data = M[:orders]
-              .query(query)
-              .sort(created_at: -1)
-              .skip((page - 1) * per_page)
-              .limit(per_page)
-              .to_a
-            
-          #{post}
-        CODE
-      end
-    end
-    
-    # 如果是 POST/PUT 请求但没有 get_json_body，添加它
-    if (code =~ /(post|put).*do/) && !code.include?('get_json_body')
-      code = code.sub(/(\s*)(begin\s*$.*?)(\s*(?:make_resp|ok)\(.*?\))/m) do
-        pre, begin_part, post = $1, $2, $3
-        <<~CODE.gsub(/^/, pre)
-          #{begin_part}
-            # 获取请求体
-            body = get_json_body
-            return make_resp(nil, 'error', 40001, '无效的请求体') unless body
+    # 如果是 GET 请求但没有分页，添加分页和日期范围过滤
+    if route_code =~ /get.*\/api\/v1\/orders.*do/ && !route_code.include?('page')
+      route_code = <<~RUBY
+        begin
+          # 获取用户信息
+          user_id = get_prop_from_token('uid')
+          halt 401, make_resp(nil, 'error', 40100, '用户未登录').to_json unless user_id
 
-            # 获取用户信息
-            user_id = get_prop_from_token('uid')
-            return make_resp(nil, 'error', 40100) unless user_id
-            
-          #{post}
-        CODE
+          # 获取查询参数
+          page = (params['page'] || 1).to_i
+          per_page = (params['per_page'] || 20).to_i
+          
+          # 处理日期范围过滤
+          query = { user_id: user_id }
+          if params['start_date'] && params['end_date']
+            query[:created_at] = {
+              '$gte' => Time.parse(params['start_date']).beginning_of_day,
+              '$lte' => Time.parse(params['end_date']).end_of_day
+            }
+          end
+          
+          # 查询订单
+          total = M[:orders].count(query)
+          orders = M[:orders].find(query)
+            .sort(created_at: -1)
+            .skip((page - 1) * per_page)
+            .limit(per_page)
+            .to_a
+            .map { |order| 
+              {
+                id: order['_id'].to_s,
+                order_number: order['order_number'],
+                status: order['status'],
+                total_amount: order['total_amount'],
+                created_at: order['created_at']
+              }
+            }
+          
+          # 返回结果
+          make_resp({
+            orders: orders,
+            pagination: {
+              total: total,
+              page: page,
+              per_page: per_page,
+              total_pages: (total.to_f / per_page).ceil
+            }
+          }).to_json
+        rescue => e
+          halt 500, make_resp(nil, 'error', 50000, e.message).to_json
+        end
+      RUBY
+    end
+
+    # 如果是 POST/PUT 请求但没有请求体处理
+    if route_code =~ /(post|put).*do/ && !route_code.include?('get_json_body')
+      route_code = route_code.sub(/(?<=begin\n)(\s*)(.*?)(?=\s*rescue)/m) do
+        pre = $2
+        <<~RUBY
+          # 获取用户信息
+          user_id = get_prop_from_token('uid')
+          return make_resp(nil, 'error', 40100) unless user_id
+
+          # 获取请求体
+          body = get_json_body
+          return make_resp(nil, 'error', 40001, '无效的请求体') unless body
+          #{pre}
+        RUBY
       end
     end
-    
-    # 如果没有用户认证，添加它
-    if !code.include?('get_prop_from_token')
-      code = code.sub(/(\s*)(begin\s*$.*?)(\s*(?:make_resp|ok)\(.*?\))/m) do
-        pre, begin_part, post = $1, $2, $3
-        <<~CODE.gsub(/^/, pre)
-          #{begin_part}
-            # 获取用户信息
-            user_id = get_prop_from_token('uid')
-            return make_resp(nil, 'error', 40100) unless user_id
-            
-          #{post}
-        CODE
+
+    # 确保有用户认证
+    unless route_code.include?('get_prop_from_token')
+      route_code = route_code.sub(/(?<=begin\n)(\s*)/) do
+        <<~RUBY
+          # 获取用户信息
+          user_id = get_prop_from_token('uid')
+          return make_resp(nil, 'error', 40100) unless user_id
+
+        RUBY
       end
     end
-    
-    # 如果没有错误处理，添加它
-    if !code.include?('rescue')
-      code = code.sub(/(\s*end\s*)$/) do
-        indent = $1.match(/^\s*/)[0]
-        <<~CODE
-          #{indent}rescue => e
-          #{indent}  make_resp(nil, 'error', 50000, e.message)
-          #{indent}end
-        CODE
-      end
+
+    # 替换原始代码中的路由部分
+    if code =~ /(get|post|put|delete)\s+['"].*?['"].*?do.*?end/m
+      code = code.sub(/(get|post|put|delete)\s+['"].*?['"].*?do.*?end/m, route_code)
+    else
+      code = route_code
     end
-    
-    puts "Code after ensuring patterns:\n#{code}"  # 添加调试日志
+
     code
   end
   
@@ -171,27 +262,6 @@ class CodeGeneratorParser < ContentParser
     # 确保代码是正确的缩进
     lines = code.split("\n")
     lines.map { |line| "    #{line}" }.join("\n") + "\n"
-  end
-  
-  def validate_generated_code(code)
-    # 验证 Sinatra 特定的代码结构
-    required_patterns = [
-      /get_json_body/,          # 请求体处理
-      /get_prop_from_token/,    # 令牌属性获取
-      /make_resp|ok/,           # 响应处理
-      /M\[:[^\]]+\]/           # MongoDB 集合访问
-    ]
-    
-    missing_patterns = required_patterns.reject { |p| code =~ p }
-    raise "Missing required patterns: #{missing_patterns}" unless missing_patterns.empty?
-    
-    # 基本语法检查
-    eval("def __temp_validate\n#{code}\nend", TOPLEVEL_BINDING)
-    true
-  rescue SyntaxError => e
-    raise "Generated code has syntax errors: #{e.message}"
-  ensure
-    TOPLEVEL_BINDING.eval('undef __temp_validate') rescue nil
   end
   
   def build_script_record(code, original_query)

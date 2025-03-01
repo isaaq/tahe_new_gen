@@ -32,25 +32,25 @@ module FeedbackRoutes
         {error: e.message}.to_json
       end
     end
-  end
-  
-  private
-  
-  def self.update_parser_strategy(doc_id, feedback_type)
-    # 基于反馈更新文档的解析器选择策略
-    strategy_updates = {
-      'incorrect_parse': 'ai',      # 如果规则解析错误，切换到AI解析
-      'partial_parse': 'hybrid',    # 如果解析不完整，使用混合解析
-      'correct_parse': nil          # 保持当前解析器
-    }
     
-    new_parser = strategy_updates[feedback_type.to_sym]
-    return unless new_parser
+    private
     
-    Common::M.update(
-      'documents',
-      {_id: BSON::ObjectId(doc_id)},
-      {'$set': {'_meta.parser': new_parser}}
-    )
+    def self.update_parser_strategy(doc_id, feedback_type)
+      # 基于反馈更新文档的解析器选择策略
+      strategy_updates = {
+        'incorrect_parse': 'ai',      # 如果规则解析错误，切换到AI解析
+        'partial_parse': 'hybrid',    # 如果解析不完整，使用混合解析
+        'correct_parse': nil          # 保持当前解析器
+      }
+      
+      new_parser = strategy_updates[feedback_type.to_sym]
+      return unless new_parser
+      
+      Common::M.update(
+        'documents',
+        {_id: BSON::ObjectId(doc_id)},
+        {'$set': {'_meta.parser': new_parser}}
+      )
+    end
   end
 end
