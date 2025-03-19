@@ -39,4 +39,14 @@ class TestModel < Test::Unit::TestCase
     puts code2
   end 
 
+  def test_table
+    code = <<~CODE
+      <kr:table>
+        
+      </kr:table>
+    CODE
+    code = UIPage.new(:kr).parse_code(code)
+    code2 = UIPage.new(:layui).parse_code(code)
+    puts code2
+  end
 end

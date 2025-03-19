@@ -21,6 +21,25 @@ module FieldBehavior
     end
     flag
   end
+  
+  # 验证字段是否有效
+  def valid?
+    # 默认实现，子类可以重写该方法
+    if respond_to?(:check)
+      return check
+    end
+    
+    # 如果没有 check 方法，则检查是否有任何以 c_ 开头的方法
+    c_methods = methods.select { |m| m.to_s.start_with?('c_') }
+    
+    if c_methods.empty?
+      # 如果没有验证方法，则默认为有效
+      return true
+    else
+      # 执行所有验证方法
+      c_methods.all? { |m| send(m) }
+    end
+  end
 
   def c_required
     return false if value.nil?

@@ -11,7 +11,8 @@ gem 'sinatra-flash'
 group :development do
   gem 'sinatra-reloader'
 end
-gem 'activesupport'
+gem 'railties', '~> 7.1.3'
+gem 'activesupport', '~> 7.1.3'
 gem 'jwt'
 gem 'letsaboard', path: '/Users/isaac/codes/tahe/point/letsaboard'
 gem 'mongo'
@@ -29,3 +30,5 @@ gem 'thor'
 gem 'yaml'
 gem 'faraday'
 gem 'radius'
+gem "ruby-lsp", "~> 0.23.11"
+gem "debug", "~> 1.10"
