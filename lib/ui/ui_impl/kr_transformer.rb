@@ -2,7 +2,7 @@
 
 class KrTransformer
   include Common
-  DICT = { col: :TableColItem, table: :TableItem, form: :FormTag, input: :InputItem, page: :PageItem }
+  DICT = { col: :TableColItem, table: :TableItem, form: :FormTag, input: :InputItem, page: :PageItem, number_range_input: :NumberRangeInputItem }
   def self.trans(tag, ctx, children = nil)
     # TODO: kr tag -> layui tag 策略模板
     # 这里应该读取NodeEditor编辑过的内容

@@ -2,9 +2,9 @@ def dev
   true
 end
 
-def __p(obj)
+def __p(*args)
   p ">>>>>>>>>>>>> #{DateTime.now} #{caller_locations(0)[1]}"
-  p obj
+  args.each { |arg| p arg }
   p "<<<<<<<<<<<<< #{DateTime.now}"
   puts
 end

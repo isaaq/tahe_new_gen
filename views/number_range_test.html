@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>数字范围字段测试</title>
+  <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.5.6/css/layui.css">
+  <script src="https://www.layuicdn.com/layui-v2.5.6/layui.js"></script>
+  <style>
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #e6e6e6;
+      background-color: #f9f9f9;
+    }
+    .number-range-container {
+      display: flex;
+      align-items: center;
+    }
+    .number-range-min, .number-range-max {
+      width: 45%;
+    }
+    .number-range-separator {
+      width: 10%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="layui-title">数字范围字段测试</h1>
+    
+    <div class="layui-card">
+      <div class="layui-card-header">测试表单</div>
+      <div class="layui-card-body">
+        <form class="layui-form" action="/save" method="post">
+          <!-- 价格范围 -->
+          <div class="layui-form-item">
+            <label class="layui-form-label">价格范围</label>
+            <div class="layui-input-block number-range-container">
+              <input type="number" class="layui-input number-range-min" id="price_min" name="price_range_min" 
+                     placeholder="最小值" value="100" style="width:45%;display:inline-block;">
+              <span class="number-range-separator" style="display:inline-block;width:10%;text-align:center;">至</span>
+              <input type="number" class="layui-input number-range-max" id="price_max" name="price_range_max" 
+                     placeholder="最大值" value="1000" style="width:45%;display:inline-block;">
+              <input type="hidden" name="price_range" id="price_range" value="[100,1000]">
+            </div>
+          </div>
+          
+          <!-- 年龄范围 -->
+          <div class="layui-form-item">
+            <label class="layui-form-label">年龄范围</label>
+            <div class="layui-input-block number-range-container">
+              <input type="number" class="layui-input number-range-min" id="age_min" name="age_range_min" 
+                     placeholder="最小值" value="" style="width:45%;display:inline-block;">
+              <span class="number-range-separator" style="display:inline-block;width:10%;text-align:center;">至</span>
+              <input type="number" class="layui-input number-range-max" id="age_max" name="age_range_max" 
+                     placeholder="最大值" value="" style="width:45%;display:inline-block;">
+              <input type="hidden" name="age_range" id="age_range" value="[null,null]">
+            </div>
+          </div>
+          
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <button type="button" class="layui-btn" id="submitBtn">提交</button>
+              <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="layui-card">
+      <div class="layui-card-header">提交结果</div>
+      <div class="layui-card-body">
+        <div class="result-box">
+          <pre id="result">尚未提交数据</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    layui.use(['form', 'jquery'], function(){
+      var $ = layui.jquery;
+      var form = layui.form;
+      
+      // 处理价格范围输入
+      $('#price_min, #price_max').on('change', function() {
+        var min = $('#price_min').val() || null;
+        var max = $('#price_max').val() || null;
+        $('#price_range').val(JSON.stringify([min, max]));
+      });
+      
+      // 处理年龄范围输入
+      $('#age_min, #age_max').on('change', function() {
+        var min = $('#age_min').val() || null;
+        var max = $('#age_max').val() || null;
+        $('#age_range').val(JSON.stringify([min, max]));
+      });
+      
+      $('#submitBtn').on('click', function(){
+        // 收集表单数据
+        var formData = {};
+        $('form').find('input[name]').each(function(){
+          var name = $(this).attr('name');
+          var value = $(this).val();
+          
+          // 处理隐藏的number_range字段
+          if (name.endsWith('_range')) {
+            try {
+              formData[name] = JSON.parse(value);
+            } catch(e) {
+              formData[name] = value;
+            }
+          } else if (!name.endsWith('_min') && !name.endsWith('_max')) {
+            // 忽略辅助字段
+            formData[name] = value;
+          }
+        });
+        
+        // 显示结果
+        $('#result').html(JSON.stringify(formData, null, 2));
+        
+        // 提交到服务器
+        $.ajax({
+          url: '/save',
+          type: 'POST',
+          data: formData,
+          success: function(response) {
+            $('#result').html(JSON.stringify(response, null, 2));
+          },
+          error: function(error) {
+            $('#result').html('提交失败: ' + JSON.stringify(error, null, 2));
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

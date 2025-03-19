@@ -67,10 +67,10 @@ module MongoCommonUtil
   end
 
   def query(query_hash = {}, opts = {})
-    puts "[查询前] 原始条件: #{query_hash.inspect}"
+    # __p "[查询前] 原始条件: #{query_hash.inspect}"
     mongo_parse_query!(query_hash)
-    puts "[查询后] 处理后条件: #{query_hash.inspect}"
-    puts "[查询表名] #{@db.table}"
+    # __p "[查询后] 处理后条件: #{query_hash.inspect}"
+    # __p "[查询表名] #{@db.table}"
     
     qry = @db.db[@db.table].find(query_hash)
     qry.sort(opts[:sort]) unless opts[:sort].nil?
@@ -82,7 +82,7 @@ module MongoCommonUtil
     original_to_a = qry.method(:to_a)
     qry.define_singleton_method(:to_a) do
       results = original_to_a.call
-      puts "[查询结果] 结果数量: #{results.size}, 第一条数据: #{results.first.inspect if results.any?}"
+      # __p "[查询结果] 结果数量: #{results.size}, 第一条数据: #{results.first.inspect if results.any?}"
       results.each do |item|
         mongo_util.process_custom_fields_from_db(item) if item.is_a?(Hash)
       end

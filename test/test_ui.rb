@@ -49,4 +49,25 @@ class TestModel < Test::Unit::TestCase
     code2 = UIPage.new(:layui).parse_code(code)
     puts code2
   end
+
+  def test_number_range_input
+    code = <<~CODE
+      <kr:number_range_input lbl="价格" name="price_range" min_value="0" max_value="100"/>
+
+      <kr:form>
+            <kr:number_range_input name="price_range" lbl="价格范围" min_value="100" max_value="1000"></kr:number_range_input>
+            <kr:number_range_input name="age_range" lbl="年龄范围"></kr:number_range_input>
+            
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="submitBtn">提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+              </div>
+            </div>
+          </kr:form>
+    CODE
+    code = UIPage.new(:kr).parse_code(code)
+    code2 = UIPage.new(:layui).parse_code(code)
+    puts code2
+  end
 end

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>数字范围字段测试</title>
+  <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.5.6/css/layui.css">
+  <script src="https://www.layuicdn.com/layui-v2.5.6/layui.js"></script>
+  <style>
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #e6e6e6;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="layui-title">数字范围字段测试</h1>
+    
+    <div class="layui-card">
+      <div class="layui-card-header">测试表单</div>
+      <div class="layui-card-body">
+       
+          <kr:form>
+            <kr:number_range_input name="price_range" lbl="价格范围" min_value="100" max_value="1000"></kr:number_range_input>
+            <kr:number_range_input name="age_range" lbl="年龄范围"></kr:number_range_input>
+            
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="submitBtn">提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+              </div>
+            </div>
+          </kr:form>
+     
+      </div>
+    </div>
+    
+    <div class="layui-card">
+      <div class="layui-card-header">提交结果</div>
+      <div class="layui-card-body">
+        <div class="result-box">
+          <pre id="result">尚未提交数据</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    layui.use(['form', 'jquery'], function(){
+      var $ = layui.jquery;
+      var form = layui.form;
+      
+      // 提交按钮点击事件
+      $('#submitBtn').on('click', function(){
+        // 收集表单数据
+        var formData = {};
+        
+        // 获取所有数字范围字段
+        $('.number-range-value').each(function() {
+          var input = $(this);
+          var name = input.attr('name');
+          var value = input.val();
+          
+          console.log('Processing range field:', name, 'Value:', value);
+          
+          // 确保数据格式正确
+          try {
+            // 尝试解析JSON，如果有效则保留字符串格式
+            JSON.parse(value);
+            formData[name] = value;
+          } catch(e) {
+            console.error('Invalid JSON in field', name, ':', value);
+            // 如果无效，创建一个空数组
+            formData[name] = JSON.stringify(["", ""]);
+          }
+        });
+        
+        // 添加其他非辅助字段
+        $('form').find('input[name]').each(function() {
+          var name = $(this).attr('name');
+          var value = $(this).val();
+          
+          // 跳过辅助字段和已处理的字段
+          if (!name.endsWith('_min') && !name.endsWith('_max') && !name.endsWith('_range') && !formData.hasOwnProperty(name)) {
+            formData[name] = value;
+          }
+        });
+        
+        console.log('Final form data:', formData);
+        
+        // 显示表单数据
+        $('#result').html('Submitting: ' + JSON.stringify(formData, null, 2));
+        
+        // 提交到服务器
+        $.ajax({
+          url: '/api/test/number_range/save',
+          type: 'POST',
+          data: formData,
+          contentType: 'application/x-www-form-urlencoded',
+          dataType: 'json',
+          success: function(response) {
+            $('#result').html(JSON.stringify(response, null, 2));
+          },
+          error: function(xhr, status, error) {
+            $('#result').html('提交失败: ' + status + '<br>\n' + xhr.responseText);
+            console.error('Ajax error:', xhr, status, error);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

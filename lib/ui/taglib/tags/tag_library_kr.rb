@@ -5,7 +5,7 @@ class TagLibraryKr < Tags::TagLibrary
   prefix :kr
 
   tag :test do |_tag|
-    '<%=_kr_ui_scope_var%>'
+    "<%=_kr_ui_scope_var%>"
   end
 
   tag :test2 do |_tag|
@@ -13,10 +13,8 @@ class TagLibraryKr < Tags::TagLibrary
   end
 
   tag :test3 do |_tag|
-    
   end
 
-  register_root_tag :kr, :table, :form, :page
-  register_child_tag :kr, :col, :input
- 
+  register_root_tag :kr, :table, :form, :page, :number_range_input
+  register_child_tag :kr, :col, :input, :number_range_input
 end

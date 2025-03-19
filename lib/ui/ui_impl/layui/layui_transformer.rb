@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class LayuiTransformer
-  DICT = { :'t-col' => :TableColTarget, :'t-table' => :TableTarget, i: :InputTarget, f: :FormTarget }
+  DICT = { :'t-col' => :TableColTarget, :'t-table' => :TableTarget, i: :InputTarget, f: :FormTarget, nri: :NumberRangeInputTarget }
   def self.trans(tag, ctx, children)
     clzname = DICT[tag.name.to_sym]
     if !clzname.nil? && Object.const_defined?(clzname)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../../../util/common_func'
+require_relative "../../../../util/common_func"
 
 module TagHelper
   include Common
@@ -8,26 +8,28 @@ module TagHelper
   module RegTag
     # 为 tag 生成 id 的方法
     def kr_id(tag)
-      tag.attr['id'] || "#{tag.name}_#{gen_id}"
+      tag.attr["id"] || "#{tag.name}_#{gen_id}"
     end
 
     # 更新上下文的方法
     def make_ctx(tag, id = nil, parent_id = nil)
-      tag.attr['id'] = id unless id.nil?
+      tag.attr["id"] = id unless id.nil?
       @context ||= {}
       if !id.nil? && parent_id.nil?
-        @context[id.to_sym] ||= []
         @context[id.to_sym] = { type: tag.name }.merge(tag.attr.transform_keys(&:to_sym))
       end
       return if parent_id.nil?
 
+      # 确保父级哈希存在
+      @context[parent_id.to_sym] ||= {}
+      # 确保tag.name对应的数组存在
       @context[parent_id.to_sym][tag.name.to_sym] ||= []
       @context[parent_id.to_sym][tag.name.to_sym] << { type: tag.name }.merge(tag.attr.transform_keys(&:to_sym))
     end
 
     # 生成目标对象的方法
     def make_target(tag, prefix, children = nil)
-      Object.const_get(prefix.to_s.capitalize + 'Transformer').trans(tag, @context, children)
+      Object.const_get(prefix.to_s.capitalize + "Transformer").trans(tag, @context, children)
     end
 
     # 注册根级标签
@@ -50,15 +52,15 @@ module TagHelper
 
     # 设置根级标签的逻辑
     def setup_root_tag(tag, type)
-      id = tag.attr['id'] || "#{tag.name}_#{SecureRandom.hex(4)}"
+      id = tag.attr["id"] || "#{tag.name}_#{SecureRandom.hex(4)}"
       make_ctx(tag, id)
       make_target(tag, type, tag.expand)
     end
 
     # 设置子级标签的逻辑
     def setup_parent_tag(tag, type)
-      parent_id = tag.parent['id']
-      id = tag.attr['id'] || "#{tag.name}_#{SecureRandom.hex(4)}"
+      parent_id = tag.parent["id"]
+      id = tag.attr["id"] || "#{tag.name}_#{SecureRandom.hex(4)}"
       make_ctx(tag, id, parent_id)
       make_target(tag, type)
     end
@@ -85,36 +87,36 @@ module Radius
 
   class Scanner
     def operate(prefix, data)
-      data = data.force_encoding('UTF-8')  # Force UTF-8 encoding
+      data = data.force_encoding("UTF-8")  # Force UTF-8 encoding
       data = Radius::OrdString.new data
-      @nodes = ['']
-      
+      @nodes = [""]
+
       re = scanner_regex(prefix)
       last_pos = 0
       if md = re.match(data)
-        remainder = ''  
+        remainder = ""
         while md
           start_tag, attributes, self_enclosed, end_tag = $1, $2, $3, $4
-          flavor = self_enclosed == '/' ? :self : (start_tag ? :open : :close)
+          flavor = self_enclosed == "/" ? :self : (start_tag ? :open : :close)
           attrs = parse_attributes(attributes)
           pos = data.index(md[0], last_pos)
           # 找到匹配位置之前的所有文本
           preceding_text = data[0...pos]
-          last_pos = pos||0 + md[0].length
+          last_pos = pos || 0 + md[0].length
           # 通过正则找到匹配前的最后一行
           previous_line = preceding_text&.split(/\n/)&.last
-          attrs['objtree'] = previous_line if previous_line&.match(/\/\/\[.+?\]\/\//)
+          attrs["objtree"] = previous_line if previous_line&.match(/\/\/\[.+?\]\/\//)
           # save the part before the current match as a string node
-          @nodes << (attrs['objtree'] ? md.pre_match.gsub(previous_line, '') : md.pre_match)
+          @nodes << (attrs["objtree"] ? md.pre_match.gsub(previous_line, "") : md.pre_match)
           # save the tag that was found as a tag hash node
-          @nodes << {:prefix=>prefix, :name=>(start_tag || end_tag), :flavor => flavor, :attrs => attrs}
+          @nodes << { :prefix => prefix, :name => (start_tag || end_tag), :flavor => flavor, :attrs => attrs }
 
           # remember the part after the current match
           remainder = md.post_match
           # see if we find another tag in the remaining string
           md = re.match(md.post_match)
-        end  
-        
+        end
+
         # add the last remaining string after the last tag that was found as a string node
         @nodes << remainder
       else
