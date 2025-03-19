@@ -18,6 +18,7 @@ require_relative './_system'
 require_relative './lib/util/common'
 require_relative './lib/model/_config'
 require_relative './lib/biz/_config'
+require_relative './lib/middleware/static_pages_middleware'
 
 Dir.glob(['./api/_config.rb']).each do |file|
   "装载配置#{file}" if development?
@@ -33,6 +34,13 @@ Opal::Sprockets.javascript_include_tag('ui/web', sprockets: opal.sprockets, pref
 map '/assets' do
   run opal.sprockets
 end
+
+# 使用静态页面中间件
+use StaticPagesMiddleware, {
+  enabled: ENV['USE_STATIC_PAGES'] == 'true',
+  static_dir: File.join(File.dirname(__FILE__), 'web/static'),
+  excluded_paths: ['/api/', '/sys/', '/assets/']
+}
 
 map('/api') { run TaheController }
 map('/sys') { run SystemController }
