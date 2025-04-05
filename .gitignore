@@ -20,6 +20,7 @@ Thumbs.db
 *.swn
 *.bak
 *.tmp
+.VSCodeCounter/
 
 # 忽略编译生成的文件
 **/*.class

@@ -21,7 +21,47 @@ module MongoCommonUtil
         parse(l)
       end
     end
+    
+    # 加载完模型后创建全局搜索索引
+    create_global_search_index if @db && @db.model
+    
     self
+  end
+  
+  # 为标记了is_global_search的字段创建全文索引
+  def create_global_search_index
+    return if @db.nil? || @db.model.nil? || !@db.model.respond_to?(:_fields)
+    
+    # 获取所有标记为全局搜索的字段
+    global_search_fields = @db.model._fields.select { |f| f.is_a?(Hash) && f[:is_global_search] }
+    return if global_search_fields.empty?
+    
+    begin
+      # 创建索引定义
+      index_fields = {}
+      global_search_fields.each do |field|
+        field_name = field[:name] || field['name']
+        next if field_name.nil?
+        index_fields[field_name] = "text"
+      end
+      
+      # 如果有需要索引的字段，创建文本索引
+      if index_fields.any?
+        puts "为表 #{@db.table} 创建全局搜索索引: #{index_fields.keys.join(', ')}"
+        # 检查索引是否已存在，如果存在则不重新创建
+        existing_indexes = @db.db[@db.table].indexes.list.to_a
+        index_exists = existing_indexes.any? { |idx| idx["name"] == "global_search_index" }
+        
+        unless index_exists
+          @db.db[@db.table].indexes.create_one(index_fields, { name: "global_search_index" })
+          puts "全局搜索索引创建成功"
+        else
+          puts "全局搜索索引已存在，跳过创建"
+        end
+      end
+    rescue => e
+      puts "创建全局搜索索引失败: #{e.message}"
+    end
   end
 
   def [](key)
@@ -67,6 +107,9 @@ module MongoCommonUtil
   end
 
   def query(query_hash = {}, opts = {})
+    # 确保在查询前创建索引
+    create_global_search_index if query_hash.has_key?(:_global_search_str)
+    
     # __p "[查询前] 原始条件: #{query_hash.inspect}"
     mongo_parse_query!(query_hash)
     # __p "[查询后] 处理后条件: #{query_hash.inspect}"
@@ -270,8 +313,38 @@ module MongoCommonUtil
     return if qry.nil?
     
     # 全局搜索
-    return nil if qry.has_key?(:_global_search_str) && qry[:_global_search_str].nil?
-
+    if qry.has_key?(:_global_search_str) && !qry[:_global_search_str].nil?
+      search_text = qry.delete(:_global_search_str)
+      
+      # 如果有模型定义，则使用模型中标记为全局搜索的字段
+      if @db && @db.model && @db.model.respond_to?(:_fields)
+        # 获取所有标记为全局搜索的字段
+        global_search_fields = @db.model._fields.select { |f| f.is_a?(Hash) && f[:is_global_search] }
+        
+        if global_search_fields && !global_search_fields.empty?
+          # 构建 $or 查询，搜索每个标记为全局搜索的字段
+          or_conditions = global_search_fields.map do |field|
+            field_name = field[:name] || field['name']
+            next if field_name.nil?
+            # 使用正则表达式进行不区分大小写的搜索
+            { field_name => { '$regex' => search_text, '$options' => 'i' } }
+          end.compact
+          
+          # 添加到查询中
+          if or_conditions.any?
+            qry['$or'] = or_conditions
+          end
+        else
+          # 如果没有找到标记的字段，则使用正则表达式搜索name字段（通常存在）
+          # 避免使用$text操作符，因为它需要文本索引
+          qry['name'] = { '$regex' => search_text, '$options' => 'i' }
+        end
+      else
+        # 没有模型定义时，使用name字段的正则表达式搜索
+        qry['name'] = { '$regex' => search_text, '$options' => 'i' }
+      end
+    end
+    
     # 角色权限
     if Common::C[:auto_role_query] == 1
       unless @user.nil? || @user['roles'].nil?

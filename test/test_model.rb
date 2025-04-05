@@ -51,4 +51,8 @@ class TestModel < Test::Unit::TestCase
   def test_role
     p M[:店铺].query.to_a
   end
+
+  def test_global_search
+    p M[:_组织].query(_global_search_str: '测试').to_a
+  end
 end
