@@ -77,6 +77,9 @@ module MongoCommonUtil
         model = parse_file_model(mfile)
         Global.instance._user_models << model if !model.nil? && !Global.instance._user_models.include?(model)
       end
+    else
+      # TODO: 读取用户模型 默认读取哪里的 从数据库 从C配置文件 从某默认目录
+      
     end
 
     # path = "./test/data/dsl/model/#{key}.m"
@@ -116,7 +119,8 @@ module MongoCommonUtil
     # __p "[查询表名] #{@db.table}"
     
     qry = @db.db[@db.table].find(query_hash)
-    qry.sort(opts[:sort]) unless opts[:sort].nil?
+    qry = qry.projection(opts[:show]) unless opts[:show].nil?
+    qry = qry.sort(opts[:sort]) unless opts[:sort].nil?
     @db.db.close
     qry.model = @db.model
     

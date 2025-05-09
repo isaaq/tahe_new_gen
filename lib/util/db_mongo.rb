@@ -8,8 +8,7 @@ class DBMongo
   end
 
   def init(opts = {})
-    path = File.join(File.dirname(__FILE__), '../../')
-    c = YAML.load_file("#{path}config.yml") if @c.nil?
+    c = Common::C
     if opts.has_key?(:host)
       mc = Mongo::Client.new(\
         [opts[:host]] \

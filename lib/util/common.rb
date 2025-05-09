@@ -15,8 +15,22 @@ module Common
     end
 
     def read(key)
-      path = File.join(File.dirname(__FILE__), '../../')
-      @c = YAML.load_file("#{path}config.yml") if @c.nil?
+      # 使用当前工作目录作为项目根目录，保证读取到启动者目录下的 config.yml
+      return @c[key.to_s] if @c
+
+      # 1. 读取核心库默认配置
+      core_config_path = File.join(File.dirname(__FILE__), '../../config.yml')
+      core_config = File.exist?(core_config_path) ? YAML.load_file(core_config_path) : {}
+      core_config = core_config.is_a?(Hash) ? core_config : {}
+
+      # 2. 读取调用者项目配置
+      project_config_path = File.join(Dir.pwd, 'config.yml')
+      project_config = File.exist?(project_config_path) ? YAML.load_file(project_config_path) : {}
+      project_config = project_config.is_a?(Hash) ? project_config : {}
+
+      # 3. 合并，调用者配置覆盖核心库
+      @c = core_config.merge(project_config)
+
       @c[key.to_s]
     end
   end

@@ -14,6 +14,7 @@ class ApiController < Sinatra::Base
   set :protection, except: %i[frame_options json_csrf]
 
   configure do
+    # M.change_db(C[:mongo]['use_db'])
     services_list = M[:sys_settings].query({ name: 'services' }).to_a[0]
     services = services_list[:value]
     found = services.find { |f| f[:ip] == C[:ip] && f[:name] == C[:name] }
