@@ -109,105 +109,190 @@ module MongoCommonUtil
     self
   end
 
+  # 保存原始的 query 方法
+  alias_method :original_query, :query if method_defined?(:query)
+  
   def query(query_hash = {}, opts = {})
-    # 确保在查询前创建索引
-    create_global_search_index if query_hash.has_key?(:_global_search_str)
-    
-    # __p "[查询前] 原始条件: #{query_hash.inspect}"
-    mongo_parse_query!(query_hash)
-    # __p "[查询后] 处理后条件: #{query_hash.inspect}"
-    # __p "[查询表名] #{@db.table}"
-    
-    qry = @db.db[@db.table].find(query_hash)
-    qry = qry.projection(opts[:show]) unless opts[:show].nil?
-    qry = qry.sort(opts[:sort]) unless opts[:sort].nil?
-    @db.db.close
-    qry.model = @db.model
-    
-    # 扩展MongoDB的Cursor类型，在to_a方法中处理自定义字段
-    mongo_util = self
-    original_to_a = qry.method(:to_a)
-    qry.define_singleton_method(:to_a) do
-      results = original_to_a.call
-      # __p "[查询结果] 结果数量: #{results.size}, 第一条数据: #{results.first.inspect if results.any?}"
-      results.each do |item|
-        mongo_util.process_custom_fields_from_db(item) if item.is_a?(Hash)
+    # 如果模型类定义了 query 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:query)
+      @db.model.query(query_hash, opts)
+    else
+      # 确保在查询前创建索引
+      create_global_search_index if query_hash.has_key?(:_global_search_str)
+      
+      # __p "[查询前] 原始条件: #{query_hash.inspect}"
+      mongo_parse_query!(query_hash)
+      # __p "[查询后] 处理后条件: #{query_hash.inspect}"
+      # __p "[查询表名] #{@db.table}"
+      
+      qry = @db.db[@db.table].find(query_hash)
+      qry = qry.projection(opts[:show]) unless opts[:show].nil?
+      qry = qry.sort(opts[:sort]) unless opts[:sort].nil?
+      @db.db.close
+      qry.model = @db.model
+      
+      # 扩展MongoDB的Cursor类型，在to_a方法中处理自定义字段
+      mongo_util = self
+      original_to_a = qry.method(:to_a)
+      qry.define_singleton_method(:to_a) do
+        results = original_to_a.call
+        # __p "[查询结果] 结果数量: #{results.size}, 第一条数据: #{results.first.inspect if results.any?}"
+        results.each do |item|
+          mongo_util.process_custom_fields_from_db(item) if item.is_a?(Hash)
+        end
+        results
       end
-      results
+      
+      qry
     end
-    
-    qry
   end
 
+  # 保存原始的 del 方法
+  alias_method :original_del, :del if method_defined?(:del)
+  
   def del(query_hash = {})
-    del_data = @db.db[@db.table].find(query_hash).to_a
-    r = @db.db[@db.table].delete_one(query_hash)
-    # 垃圾箱
-    Common::C[:audit_level] ||= 2
-    add_to_recyc(del_data, 'del') if Common::C[:audit_level] != 0
-    @db.db.close
-    r
+    # 如果模型类定义了 del 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:del)
+      @db.model.del(query_hash)
+    else
+      # 处理查询条件
+      mongo_parse_query!(query_hash)
+      
+      # 查询要删除的数据
+      del_data = query(query_hash).to_a[0]
+      
+      # 执行删除
+      ret = @db.db[@db.table].delete_one(query_hash)
+      
+      # 添加到回收站
+      add_to_recyc(del_data, @db.table) if del_data
+      
+      @db.db.close
+      ret
+    end
   end
 
+  # 保存原始的 del_many 方法
+  alias_method :original_del_many, :del_many if method_defined?(:del_many)
+  
   def del_many(query_hash = {})
-    del_data = @db.db[@db.table].find(query_hash).to_a
-    r = @db.db[@db.table].delete_many(query_hash)
-    # 垃圾箱
-    Common::C[:audit_level] ||= 2
-    add_to_recyc(del_data, 'del_many') if Common::C[:audit_level] != 0
-    @db.db.close
-    r
+    # 如果模型类定义了 del_many 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:del_many)
+      @db.model.del_many(query_hash)
+    else
+      # 处理查询条件
+      mongo_parse_query!(query_hash)
+      
+      # 查询要删除的数据
+      del_data = query(query_hash).to_a
+      
+      # 执行删除
+      ret = @db.db[@db.table].delete_many(query_hash)
+      
+      # 添加到回收站
+      del_data.each { |d| add_to_recyc(d, @db.table) } if del_data && !del_data.empty?
+      
+      @db.db.close
+      ret
+    end
   end
 
+  # 保存原始的 add 方法
+  alias_method :original_add, :add if method_defined?(:add)
+  
   def add(data = {}, _opts = {})
-    # 处理自定义字段类型
-    process_custom_fields_for_storage(data)
-    data.merge!(common_data)
-    Common::C[:audit_level] ||= 2
-    add_to_recyc(data, 'add') if Common::C[:audit_level] >= 3
-    r = @db.db[@db.table].insert_one(data)
-    @db.db.close
-    r
+    # 如果模型类定义了 add 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:add)
+      @db.model.add(data, _opts)
+    else
+      # 处理自定义字段类型
+      process_custom_fields_for_storage(data) if data.is_a?(Hash)
+      
+      # 添加系统字段
+      data[:_create_time] = Time.now
+      data[:_update_time] = Time.now
+      data[:_enabled] = true
+      
+      ret = @db.db[@db.table].insert_one(data)
+      @db.db.close
+      ret
+    end
   end
 
+  # 保存原始的 update 方法
+  alias_method :original_update, :update if method_defined?(:update)
+  
   def update(query_hash = {}, data = {}, _opts = {})
-    # 处理自定义字段类型
-    process_custom_fields_for_storage(data)
-    common_update_data = {
-      _update_time: Time.now
-    }
-    # 确保使用$set操作符
-    update_doc = data.key?('$set') || data.key?(:$set) ? data : { '$set' => data.merge(common_update_data) }
-    r = @db.db[@db.table].find_one_and_update(query_hash, update_doc)
-    Common::C[:audit_level] ||= 2
-    if Common::C[:audit_level] >= 2
-      data = @db.db[@db.table].find(query_hash).to_a
-      add_to_recyc(data, 'update')
+    # 如果模型类定义了 update 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:update)
+      @db.model.update(query_hash, data, _opts)
+    else
+      # 处理自定义字段类型
+      process_custom_fields_for_storage(data) if data.is_a?(Hash)
+      
+      # 添加系统字段
+      data[:_update_time] = Time.now
+      
+      # 处理查询条件
+      mongo_parse_query!(query_hash)
+      
+      # 执行更新
+      if data.key?('$set') || data.key?(:$set)
+        # 如果已经是更新操作符格式，直接使用
+        ret = @db.db[@db.table].update_one(query_hash, data)
+      else
+        # 否则转换为$set格式
+        ret = @db.db[@db.table].update_one(query_hash, { '$set' => data })
+      end
+      
+      @db.db.close
+      ret
     end
-    @db.db.close
-    r
   end
 
+  # 保存原始的 update_many 方法
+  alias_method :original_update_many, :update_many if method_defined?(:update_many)
+  
   def update_many(query_hash = {}, data = {}, _opts = {})
-    # 处理自定义字段类型
-    process_custom_fields_for_storage(data)
-    common_update_data = {
-      _update_time: Time.now
-    }
-    data.merge!(common_update_data)
-    r = @db.db[@db.table].update_many(query_hash, data)
-    Common::C[:audit_level] ||= 2
-    if Common::C[:audit_level] >= 2
-      data = @db.db[@db.table].find(query_hash).to_a
-      add_to_recyc(data, 'update_many')
+    # 如果模型类定义了 update_many 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:update_many)
+      @db.model.update_many(query_hash, data, _opts)
+    else
+      # 处理自定义字段类型
+      process_custom_fields_for_storage(data) if data.is_a?(Hash)
+      
+      # 添加系统字段
+      data[:_update_time] = Time.now
+      
+      # 处理查询条件
+      mongo_parse_query!(query_hash)
+      
+      # 执行更新
+      if data.key?('$set') || data.key?(:$set)
+        # 如果已经是更新操作符格式，直接使用
+        ret = @db.db[@db.table].update_many(query_hash, data)
+      else
+        # 否则转换为$set格式
+        ret = @db.db[@db.table].update_many(query_hash, { '$set' => data })
+      end
+      
+      @db.db.close
+      ret
     end
-    @db.db.close
-    r
   end
 
-  # def method_missing(m, *_args)
-  #   __p "missing #{m} #{_args}"
-  # end
+  def method_missing(method_name, *args, &block)
+    # 如果模型类定义了该方法，调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(method_name)
+      @db.model.send(method_name, *args, &block)
+    else
+      super
+    end
+  end
+  
+  def respond_to_missing?(method_name, include_private = false)
+    (@db && @db.model && @db.model.respond_to?(method_name)) || super
+  end
 
   def gen_sample_ui_code; end
 

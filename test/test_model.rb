@@ -55,4 +55,15 @@ class TestModel < Test::Unit::TestCase
   def test_global_search
     p M[:_组织].query(_global_search_str: '测试').to_a
   end
+
+  def test_method_override
+    # 在 MCOrg 类中定义一个测试方法
+    MCOrg.define_singleton_method(:test_method) do
+      "这是 MCOrg 类的测试方法"
+    end
+    
+    # 调用测试方法
+    result = M[:_组织].test_method
+    p result  # 应该输出 "这是 MCOrg 类的测试方法"
+  end
 end
