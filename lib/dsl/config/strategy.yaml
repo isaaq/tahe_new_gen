@@ -1,0 +1,34 @@
+strategies:
+  # 保存策略
+  - domain: document
+    action: save
+    context: draft
+    class: Plugins::Strategy::Save::DraftSaveStrategy
+  
+  - domain: document
+    action: save
+    context: normal
+    class: Plugins::Strategy::Save::NormalSaveStrategy
+  
+  # 提交策略
+  - domain: document
+    action: submit
+    context: draft
+    class: Plugins::Strategy::Submit::DraftStrategy
+  
+  - domain: document
+    action: submit
+    context: publish
+    class: Plugins::Strategy::Submit::PublishStrategy
+
+  # 权限策略
+  - domain: permission
+    action: filter
+    context: default
+    class: Plugins::Strategy::Permission::DefaultPermissionStrategy
+
+  # 全局搜索策略
+  - domain: search
+    action: global
+    context: default
+    class: Plugins::Strategy::Search::DefaultGlobalSearchStrategy
