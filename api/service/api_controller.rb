@@ -12,6 +12,8 @@ class ApiController < Sinatra::Base
   set :root, Sinatra::Application.settings.root
   set :public_folder, File.expand_path("#{root}/web", __FILE__)
   set :protection, except: %i[frame_options json_csrf]
+  set :views, File.expand_path("#{root}/api/views", __FILE__)
+
 
   configure do
     # M.change_db(C[:mongo]['use_db'])
@@ -61,5 +63,22 @@ class ApiController < Sinatra::Base
 
   get '/' do
     'it works'
+  end
+  
+  # 辅助方法：渲染kr标签库模板
+  def kr(template)
+    content_type :html
+    erb_content = File.read(File.join(settings.views, "#{template}.erb"))
+    puts "DEBUG: 原始模板内容:\n#{erb_content}"
+    
+    # 第一步解析：kr 标签
+    parsed_content = UIPage.new(:kr).parse_code(erb_content)
+    puts "DEBUG: kr 解析后内容:\n#{parsed_content}"
+    
+    # 第二步解析：layui 标签
+    parsed_content = UIPage.new(:layui).parse_code(parsed_content)
+    puts "DEBUG: layui 解析后内容:\n#{parsed_content}"
+    
+    parsed_content
   end
 end
