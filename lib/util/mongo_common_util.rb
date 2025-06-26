@@ -1,4 +1,6 @@
+require_relative '../strategy'
 require_relative 'db_mongo'
+Strategy.init
 
 module MongoCommonUtil
   attr_accessor :load_path, :user
@@ -385,16 +387,17 @@ module MongoCommonUtil
   end
 
   def filter_role(qry)
-    # TODO 得处理角色继承关系
-    return true if @user[:role] == 'admin'  # 管理员拥有全部权限
+    # 通过策略机制进行权限判断
     meta = qry[:_meta] || {}
-    # 按优先级检查权限
-    meta[:created_by] == @user[:_id] ||            # 是否是创建者
-    meta[:access_rules][:public] ||               # 是否公开
-    (meta[:access_rules][:department_visible] &&  # 是否本部门可见
-      @user[:department_id] == meta[:department_id]) ||
-    meta[:access_rules][:allowed_users].include?(@user[:_id]) ||  # 是否在指定用户中
-    (meta[:access_rules][:allowed_groups] & @user[:groups]).any?  # 是否在指定组中
+    # 这里 domain/action/context 可根据实际业务调整
+    begin
+      strategy = Strategy.resolve(domain: 'permission', action: 'filter', context: meta[:permission_context] || 'default')
+      return strategy.execute(user: @user, meta: meta)
+    rescue => e
+      # 策略未找到或执行异常时，默认拒绝
+      warn "[权限策略异常] #{e.message}"
+      false
+    end
   end
 
   # @param [Hash] qry
@@ -404,33 +407,27 @@ module MongoCommonUtil
     # 全局搜索
     if qry.has_key?(:_global_search_str) && !qry[:_global_search_str].nil?
       search_text = qry.delete(:_global_search_str)
-      
-      # 如果有模型定义，则使用模型中标记为全局搜索的字段
-      if @db && @db.model && @db.model.respond_to?(:_fields)
-        # 获取所有标记为全局搜索的字段
-        global_search_fields = @db.model._fields.select { |f| f.is_a?(Hash) && f[:is_global_search] }
-        
-        if global_search_fields && !global_search_fields.empty?
-          # 构建 $or 查询，搜索每个标记为全局搜索的字段
-          or_conditions = global_search_fields.map do |field|
-            field_name = field[:name] || field['name']
-            next if field_name.nil?
-            # 使用正则表达式进行不区分大小写的搜索
-            { field_name => { '$regex' => search_text, '$options' => 'i' } }
-          end.compact
-          
-          # 添加到查询中
-          if or_conditions.any?
-            qry['$or'] = or_conditions
-          end
-        else
-          # 如果没有找到标记的字段，则使用正则表达式搜索name字段（通常存在）
-          # 避免使用$text操作符，因为它需要文本索引
-          qry['name'] = { '$regex' => search_text, '$options' => 'i' }
-        end
-      else
-        # 没有模型定义时，使用name字段的正则表达式搜索
-        qry['name'] = { '$regex' => search_text, '$options' => 'i' }
+      begin
+        strategy = Strategy.resolve(domain: 'search', action: 'global', context: (@db && @db.model && @db.model.class.name) || 'default')
+        qry = strategy.execute(qry: qry, db: @db, search_text: search_text)
+      rescue => e
+        warn "[全局搜索策略异常] #{e.message}"
+        # # 回退到原有逻辑
+        # if @db && @db.model && @db.model.respond_to?(:_fields)
+        #   global_search_fields = @db.model._fields.select { |f| f.is_a?(Hash) && f[:is_global_search] }
+        #   if global_search_fields && !global_search_fields.empty?
+        #     or_conditions = global_search_fields.map do |field|
+        #       field_name = field[:name] || field['name']
+        #       next if field_name.nil?
+        #       { field_name => { '$regex' => search_text, '$options' => 'i' } }
+        #     end.compact
+        #     qry['$or'] = or_conditions if or_conditions.any?
+        #   else
+        #     qry['name'] = { '$regex' => search_text, '$options' => 'i' }
+        #   end
+        # else
+        #   qry['name'] = { '$regex' => search_text, '$options' => 'i' }
+        # end
       end
     end
     
