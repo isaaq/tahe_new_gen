@@ -32,3 +32,9 @@ strategies:
     action: global
     context: default
     class: Plugins::Strategy::Search::DefaultGlobalSearchStrategy
+
+  # 字段处理策略
+  - domain: field
+    action: process
+    context: number_range
+    class: Plugins::Strategy::Field::NumberRangeFieldProcessor

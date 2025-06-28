@@ -13,6 +13,7 @@ module Strategy
   module ::Plugins::Strategy::Submit; end
   module ::Plugins::Strategy::Search; end
   module ::Plugins::Strategy::Permission; end
+  module ::Plugins::Strategy::Field; end
   
   class << self
     # 获取策略注册表实例
@@ -25,6 +26,7 @@ module Strategy
       # 查找并加载所有策略插件
       plugin_pattern = File.join(File.dirname(__FILE__), 'plugins', 'strategy', '**', '*.rb')
       Dir[plugin_pattern].each do |file|
+        p "装载插件#{file}" if dev
         require file
       end
       # 加载权限策略插件（如果有单独目录）
@@ -40,7 +42,18 @@ module Strategy
       registry
       # 加载所有插件
       load_plugins
-      registry.load_strategies_from_config
+      # registry.load_strategies_from_config
+
+      # 添加调试信息
+      # puts "已注册的策略:"
+      # registry.strategies.each do |domain, actions|
+      #   actions.each do |action, contexts|
+      #     contexts.each do |context, klass|
+      #       puts "#{domain}.#{action}.#{context} => #{klass}"
+      #     end
+      #   end
+      # end
+
       puts "策略系统已初始化，已加载 #{registry.strategies_count} 个策略"
     end
   end
