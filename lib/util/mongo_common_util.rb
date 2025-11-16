@@ -149,6 +149,22 @@ module MongoCommonUtil
     end
   end
 
+  # 添加 count 方法
+  def count(query_hash = {})
+    # 如果模型类定义了 count 方法，优先调用模型类的方法
+    if @db && @db.model && @db.model.respond_to?(:count)
+      @db.model.count(query_hash)
+    else
+      # 处理查询条件
+      mongo_parse_query!(query_hash)
+      
+      # 使用 count_documents 方法
+      count = @db.db[@db.table].count_documents(query_hash)
+      @db.db.close
+      count
+    end
+  end
+
   # 保存原始的 del 方法
   alias_method :original_del, :del if method_defined?(:del)
   

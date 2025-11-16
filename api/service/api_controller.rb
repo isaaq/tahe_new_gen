@@ -32,8 +32,10 @@ class ApiController < Sinatra::Base
   before do
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['X-Frame-Options'] = 'allow-from *'
-    content_type :json
-    check_auth
+    # 如果设置了跳过认证标记，则不设置 content_type（让子类或 Sinatra 自动处理）
+    content_type :json unless env['skip_auth']
+    # 检查是否设置了跳过认证的标记（用于 AdminController 等不需要认证的控制器）
+    check_auth unless env['skip_auth']
     status 200
   end
 
