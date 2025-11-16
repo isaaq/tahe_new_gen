@@ -1,0 +1,33 @@
+# frozen_string_literal: true
+
+# 操作钩子插件：<%= @name %>
+# 分类：<%= @category %>
+# 插件ID：<%= @plugin_id %>
+
+module Plugins
+  module Other
+    module Hook
+      class <%= @class_name %>
+        # 钩子执行：返回可能修改后的上下文
+        # context:
+        # - action: 执行动作（save/delete等）
+        # - data: 当前数据
+        # - options: 配置
+        def call(context = {})
+          action = context[:action]
+          data = context[:data] || {}
+          options = context[:options] || {}
+
+          <%= @hook_logic %>
+
+          {
+            success: true,
+            data: data
+          }
+        end
+      end
+    end
+  end
+end
+
+

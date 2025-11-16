@@ -1,6 +1,6 @@
 require_relative 'test_common'
 
-class TestModel < Test::Unit::TestCase
+class TestUI < Test::Unit::TestCase
   include Common
 
   def test_input
@@ -65,6 +65,33 @@ class TestModel < Test::Unit::TestCase
               </div>
             </div>
           </kr:form>
+    CODE
+    code = UIPage.new(:kr).parse_code(code)
+    code2 = UIPage.new(:layui).parse_code(code)
+    puts code2
+  end
+
+  def test_missing_tag
+    code = <<~CODE
+      <kr:miss>
+        <kr:a>
+          <div>123</div>
+          <kr:number_range_input name="price_range" lbl="价格范围" min_value="100" max_value="1000"></kr:number_range_input>
+        </kr:a>
+      </kr:miss>
+    CODE
+    code = UIPage.new(:kr).parse_code(code)
+    code2 = UIPage.new(:layui).parse_code(code)
+    puts code2
+  end
+
+  def test_layout
+    code = <<~CODE
+      <kr:layout>
+        <kr:layout_panel>
+          <div>123</div>
+        </kr:layout_panel>
+      </kr:layout>
     CODE
     code = UIPage.new(:kr).parse_code(code)
     code2 = UIPage.new(:layui).parse_code(code)

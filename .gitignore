@@ -87,3 +87,6 @@ LICENSE
 # 环境变量文件
 .env
 !.env.example
+
+# windsurf rules
+.windsurfrules

@@ -1,0 +1,48 @@
+# frozen_string_literal: true
+
+require_relative '<%= @base_require_path %>'
+
+module Plugins; end
+module Plugins::Strategy; end
+module Plugins::Strategy::<%= @category_module %>; end
+
+module Plugins
+  module Strategy
+    module <%= @category_module %>
+      class <%= @class_name %> < ::Strategy::BaseStrategy
+        # 自动注册策略
+        strategy_for '<%= @domain %>', '<%= @action %>', '<%= @context %>'
+        
+        def before_execute(params = {})
+          # 验证必要参数
+          <% if @required_params && @required_params.any? %>
+          <% @required_params.each do |param| %>
+          raise "缺少必要参数: <%= param %>" unless params[:<%= param %>]
+          <% end %>
+          <% end %>
+          
+          # 预处理逻辑
+          <%= @pre_process_logic %>
+        end
+        
+        def perform(params = {})
+          # 策略实现
+          <%= @perform_logic %>
+          
+          # 返回结果
+          {
+            success: true,
+            <%= @result_fields %>
+            message: "<%= @success_message %>"
+          }
+        end
+        
+        def after_execute(params = {}, result = nil)
+          # 后处理逻辑
+          <%= @post_process_logic %>
+        end
+      end
+    end
+  end
+end
+

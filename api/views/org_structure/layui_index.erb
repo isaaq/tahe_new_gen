@@ -1,0 +1,362 @@
+<%# 组织结构管理页面 - 使用标签库系统 %>
+<kr:page title="组织结构管理">
+  <!-- 左右布局 -->
+  <kr:layout type="row">
+    <!-- 左侧组织树 -->
+    <kr:layout_panel width="30%">
+      <kr:card title="组织架构" toolbar="true">
+        <kr:toolbar>
+          <kr:button id="btn-add-org" icon="add-1" size="xs" type="normal">添加组织</kr:button>
+        </kr:toolbar>
+        <kr:tree id="org-tree" 
+                 url="/api/org/list" 
+                 onNodeClick="handleOrgClick"
+                 dataFormat="formatOrgTreeData">
+        </kr:tree>
+      </kr:card>
+    </kr:layout_panel>
+    <!-- 右侧详情区域 -->
+    <kr:layout_panel width="70%">
+      <kr:card>
+        <kr:tab id="org-tabs" filter="org-tabs">
+          <!-- 组织信息标签页 -->
+          <kr:tab_item title="组织信息" active="true">
+            <kr:form id="org-form">
+              <kr:form_item label="组织名称" id="org-name"></kr:form_item>
+              <kr:form_item label="组织编码" id="org-code"></kr:form_item>
+              <kr:form_item label="组织类型" id="org-type"></kr:form_item>
+              <kr:form_item label="上级组织" id="org-parent"></kr:form_item>
+              <kr:form_item label="描述" id="org-description"></kr:form_item>
+              <kr:form_item>
+                <kr:button id="btn-edit-org" type="primary">编辑</kr:button>
+                <kr:button id="btn-delete-org" type="danger">删除</kr:button>
+              </kr:form_item>
+            </kr:form>
+          </kr:tab_item>
+          
+          <!-- 部门管理标签页 -->
+          <kr:tab_item title="部门管理">
+            <kr:toolbar>
+              <kr:button id="btn-add-department" icon="add-1" size="sm" type="primary">添加部门</kr:button>
+            </kr:toolbar>
+            <kr:table id="department-table" 
+                     url="/api/org/{currentOrgId}/departments" 
+                     page="true">
+              <kr:table_column field="name" title="部门名称" width="150"></kr:table_column>
+              <kr:table_column field="code" title="部门编码" width="120"></kr:table_column>
+              <kr:table_column field="description" title="描述"></kr:table_column>
+              <kr:table_column field="status" title="状态" width="80" template="statusTpl"></kr:table_column>
+              <kr:table_column title="操作" width="120" toolbar="#department-toolbar"></kr:table_column>
+            </kr:table>
+            <script type="text/html" id="department-toolbar">
+              <kr:button lay-event="edit" size="xs">编辑</kr:button>
+              <kr:button lay-event="del" type="danger" size="xs">删除</kr:button>
+            </script>
+          </kr:tab_item>
+          
+          <!-- 职位管理标签页 -->
+          <kr:tab_item title="职位管理">
+            <kr:toolbar>
+              <kr:button id="btn-add-position" icon="add-1" size="sm" type="primary">添加职位</kr:button>
+            </kr:toolbar>
+            <kr:table id="position-table" 
+                     url="/api/org/{currentOrgId}/positions" 
+                     page="true">
+              <kr:table_column field="name" title="职位名称" width="150"></kr:table_column>
+              <kr:table_column field="code" title="职位编码" width="120"></kr:table_column>
+              <kr:table_column field="level" title="职级" width="80"></kr:table_column>
+              <kr:table_column field="description" title="描述"></kr:table_column>
+              <kr:table_column field="status" title="状态" width="80" template="statusTpl"></kr:table_column>
+              <kr:table_column title="操作" width="120" toolbar="#position-toolbar"></kr:table_column>
+            </kr:table>
+            <script type="text/html" id="position-toolbar">
+              <kr:button lay-event="edit" size="xs">编辑</kr:button>
+              <kr:button lay-event="del" type="danger" size="xs">删除</kr:button>
+            </script>
+          </kr:tab_item>
+          
+          <!-- 员工管理标签页 -->
+          <kr:tab_item title="员工管理">
+            <kr:toolbar>
+              <kr:button id="btn-add-employee" icon="add-1" size="sm" type="primary">添加员工</kr:button>
+            </kr:toolbar>
+            <kr:table id="employee-table" 
+                     url="/api/org/{currentOrgId}/employees" 
+                     page="true">
+              <kr:table_column field="name" title="姓名" width="100"></kr:table_column>
+              <kr:table_column field="employee_id" title="工号" width="100"></kr:table_column>
+              <kr:table_column field="department_name" title="部门" width="120"></kr:table_column>
+              <kr:table_column field="position_name" title="职位" width="120"></kr:table_column>
+              <kr:table_column field="phone" title="联系电话" width="120"></kr:table_column>
+              <kr:table_column field="email" title="邮箱" width="150"></kr:table_column>
+              <kr:table_column field="status" title="状态" width="80" template="employeeStatusTpl"></kr:table_column>
+              <kr:table_column title="操作" width="120" toolbar="#employee-toolbar"></kr:table_column>
+            </kr:table>
+            <script type="text/html" id="employee-toolbar">
+              <kr:button lay-event="edit" size="xs">编辑</kr:button>
+              <kr:button lay-event="del" type="danger" size="xs">删除</kr:button>
+            </script>
+          </kr:tab_item>
+        </kr:tab>
+      </kr:card>
+    </kr:layout_panel>
+  </kr:layout>
+  
+  <script>
+    var currentOrgId = null;
+    
+    // 格式化组织树数据
+    function formatOrgTreeData(data) {
+      return data.map(function(item) {
+        var node = {
+          title: item.name || '未命名',
+          id: item._id,
+          spread: false
+        };
+        
+        if (item.children && item.children.length > 0) {
+          node.children = formatOrgTreeData(item.children);
+        }
+        
+        return node;
+      });
+    }
+    
+    // 处理组织点击事件
+    function handleOrgClick(obj) {
+      currentOrgId = obj.data.id;
+      loadOrgDetail(currentOrgId);
+    }
+    
+    // 加载组织详情
+    function loadOrgDetail(orgId) {
+      $.ajax({
+        url: '/api/org/' + orgId,
+        type: 'GET',
+        dataType: 'json',
+        success: function(res) {
+          if (res.status === 'success') {
+            renderOrgDetail(res.data);
+            // 切换到第一个标签页
+            layui.element.tabChange('org-tabs', 0);
+          } else {
+            layer.msg(res.message || '加载组织详情失败');
+          }
+        },
+        error: function() {
+          layer.msg('加载组织详情失败');
+        }
+      });
+    }
+    
+    // 渲染组织详情
+    function renderOrgDetail(org) {
+      $('#org-name').text(org.name || '-');
+      $('#org-code').text(org.code || '-');
+      $('#org-type').text(org.type || '-');
+      $('#org-parent').text(org.parent_name || '-');
+      $('#org-description').text(org.description || '-');
+    }
+    
+    // 初始化所有表格
+    function initTables(orgId) {
+      // 部门、职位和员工表格已经通过标签库系统自动初始化
+      // 更新URL中的组织ID
+      var url = '/api/org/' + orgId + '/departments';
+      layui.table.reload('department-table', {
+        url: url
+      });
+      
+      url = '/api/org/' + orgId + '/positions';
+      layui.table.reload('position-table', {
+        url: url
+      });
+      
+      url = '/api/org/' + orgId + '/employees';
+      layui.table.reload('employee-table', {
+        url: url
+      });
+    }
+    
+    // 添加组织按钮点击事件
+    $(document).on('click', '#btn-add-org', function() {
+      layer.open({
+        type: 2,
+        title: '添加组织',
+        area: ['500px', '450px'],
+        content: '/api/org/add' + (currentOrgId ? '?parent_id=' + currentOrgId : ''),
+        end: function() {
+          // 刷新树
+          $('#org-tree').trigger('reload');
+        }
+      });
+    });
+    
+    // 编辑组织按钮点击事件
+    $(document).on('click', '#btn-edit-org', function() {
+      if (!currentOrgId) {
+        layer.msg('请先选择组织');
+        return;
+      }
+      
+      layer.open({
+        type: 2,
+        title: '编辑组织',
+        area: ['500px', '450px'],
+        content: '/api/org/edit?id=' + currentOrgId,
+        end: function() {
+          $('#org-tree').trigger('reload');
+          loadOrgDetail(currentOrgId);
+        }
+      });
+    });
+    
+    // 删除组织按钮点击事件
+    $(document).on('click', '#btn-delete-org', function() {
+      if (!currentOrgId) {
+        layer.msg('请先选择组织');
+        return;
+      }
+      
+      layer.confirm('确定要删除该组织吗？删除后将无法恢复！', function(index) {
+        $.ajax({
+          url: '/api/org/delete',
+          type: 'POST',
+          data: {id: currentOrgId},
+          dataType: 'json',
+          success: function(res) {
+            if (res.status === 'success') {
+              layer.msg('删除成功');
+              $('#org-tree').trigger('reload');
+              currentOrgId = null;
+              // 清空详情
+              renderOrgDetail({});
+            } else {
+              layer.msg(res.message || '删除失败');
+            }
+          },
+          error: function() {
+            layer.msg('删除失败');
+          }
+        });
+        layer.close(index);
+      });
+    });
+    
+    // 添加部门按钮点击事件
+    $(document).on('click', '#btn-add-department', function() {
+      if (!currentOrgId) {
+        layer.msg('请先选择组织');
+        return;
+      }
+      
+      layer.open({
+        type: 2,
+        title: '添加部门',
+        area: ['500px', '400px'],
+        content: '/api/org/' + currentOrgId + '/department/add',
+        end: function() {
+          layui.table.reload('department-table');
+        }
+      });
+    });
+    
+    // 添加职位按钮点击事件
+    $(document).on('click', '#btn-add-position', function() {
+      if (!currentOrgId) {
+        layer.msg('请先选择组织');
+        return;
+      }
+      
+      layer.open({
+        type: 2,
+        title: '添加职位',
+        area: ['500px', '400px'],
+        content: '/api/org/' + currentOrgId + '/position/add',
+        end: function() {
+          layui.table.reload('position-table');
+        }
+      });
+    });
+    
+    // 添加员工按钮点击事件
+    $(document).on('click', '#btn-add-employee', function() {
+      if (!currentOrgId) {
+        layer.msg('请先选择组织');
+        return;
+      }
+      
+      layer.open({
+        type: 2,
+        title: '添加员工',
+        area: ['600px', '500px'],
+        content: '/api/org/' + currentOrgId + '/employee/add',
+        end: function() {
+          layui.table.reload('employee-table');
+        }
+      });
+    });
+    
+    // 表格工具栏事件处理
+    layui.table.on('tool(department-table)', function(obj) {
+      handleTableToolEvent(obj, 'department');
+    });
+    
+    layui.table.on('tool(position-table)', function(obj) {
+      handleTableToolEvent(obj, 'position');
+    });
+    
+    layui.table.on('tool(employee-table)', function(obj) {
+      handleTableToolEvent(obj, 'employee');
+    });
+    
+    // 统一处理表格工具栏事件
+    function handleTableToolEvent(obj, type) {
+      var data = obj.data;
+      var event = obj.event;
+      
+      if (event === 'edit') {
+        layer.open({
+          type: 2,
+          title: '编辑' + getTypeName(type),
+          area: type === 'employee' ? ['600px', '500px'] : ['500px', '400px'],
+          content: '/api/org/' + currentOrgId + '/' + type + '/edit?id=' + data._id,
+          end: function() {
+            layui.table.reload(type + '-table');
+          }
+        });
+      } else if (event === 'del') {
+        layer.confirm('确定要删除该' + getTypeName(type) + '吗？', function(index) {
+          $.ajax({
+            url: '/api/org/' + currentOrgId + '/' + type + '/delete',
+            type: 'POST',
+            data: {id: data._id},
+            dataType: 'json',
+            success: function(res) {
+              if (res.status === 'success') {
+                layer.msg('删除成功');
+                layui.table.reload(type + '-table');
+              } else {
+                layer.msg(res.message || '删除失败');
+              }
+            },
+            error: function() {
+              layer.msg('删除失败');
+            }
+          });
+          layer.close(index);
+        });
+      }
+    }
+    
+    // 获取类型名称
+    function getTypeName(type) {
+      switch(type) {
+        case 'department': return '部门';
+        case 'position': return '职位';
+        case 'employee': return '员工';
+        default: return '';
+      }
+    }
+  </script>
+</kr:page>

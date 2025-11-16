@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>投标项目信息登记 - 网格布局</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/assets/layui/css/layui.css">
+  <style>
+    <%= KrGridLayout.generate({columns: 12, cellHeight: 80, items: []})[:css] %>
+  </style>
+</head>
+<body>
+  <div class="layui-container" style="margin-top: 20px;">
+    <div class="layui-row">
+      <div class="layui-col-md12">
+        <h2>投标项目信息登记</h2>
+        
+        <!-- 设计器工具栏 -->
+        <div class="layui-btn-group" style="margin-bottom: 15px;">
+          <button class="layui-btn layui-btn-sm" onclick="toggleDesignerMode()">设计器模式</button>
+          <button class="layui-btn layui-btn-sm layui-btn-normal" onclick="console.log(getGridConfig())">导出配置</button>
+          <button class="layui-btn layui-btn-sm layui-btn-primary" onclick="location.reload()">重置</button>
+        </div>
+        
+        <!-- 网格布局容器 -->
+        <div class="kr-grid-layout" data-grid-config='{"columns":12,"cellHeight":80,"margin":10}'>
+          
+          <!-- 基本信息区域 -->
+          <div class="kr-grid-item" 
+               data-gs-id="basic_info"
+               data-gs-x="0" data-gs-y="0" data-gs-w="12" data-gs-h="6">
+            <div class="kr-grid-item-content">
+              <div class="layui-card">
+                <div class="layui-card-header">基本信息</div>
+                <div class="layui-card-body">
+                  <div class="layui-row layui-col-space15">
+                    <div class="layui-col-md3">
+                      <label class="layui-form-label">日期:</label>
+                      <span class="layui-form-mid">2024-05-01</span>
+                    </div>
+                    <div class="layui-col-md3">
+                      <label class="layui-form-label">项目编号:</label>
+                      <span class="layui-form-mid">2023Y00016</span>
+                    </div>
+                    <div class="layui-col-md6">
+                      <label class="layui-form-label">项目类别:</label>
+                      <span class="layui-form-mid">青海共和清洁供热项目</span>
+                    </div>
+                  </div>
+                  <div class="layui-row layui-col-space15" style="margin-top: 10px;">
+                    <div class="layui-col-md3">
+                      <label class="layui-form-label">承包人:</label>
+                      <span class="layui-form-mid">李志华</span>
+                    </div>
+                    <div class="layui-col-md3">
+                      <label class="layui-form-label">联系电话:</label>
+                      <span class="layui-form-mid">17304568300</span>
+                    </div>
+                    <div class="layui-col-md3">
+                      <label class="layui-form-label">设计投资额:</label>
+                      <span class="layui-form-mid">8,000.00</span>
+                    </div>
+                    <div class="layui-col-md3">
+                      <label class="layui-form-label">实际投资额:</label>
+                      <span class="layui-form-mid">860,000.00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 项目详情区域 -->
+          <div class="kr-grid-item"
+               data-gs-id="project_details" 
+               data-gs-x="0" data-gs-y="6" data-gs-w="8" data-gs-h="4">
+            <div class="kr-grid-item-content">
+              <div class="layui-card">
+                <div class="layui-card-header">项目详情</div>
+                <div class="layui-card-body">
+                  <div class="layui-row layui-col-space15">
+                    <div class="layui-col-md6">
+                      <label class="layui-form-label">所在地区:</label>
+                      <span class="layui-form-mid">青海</span>
+                    </div>
+                    <div class="layui-col-md6">
+                      <label class="layui-form-label">项目性质:</label>
+                      <span class="layui-form-mid">建设</span>
+                    </div>
+                  </div>
+                  <div class="layui-row layui-col-space15" style="margin-top: 10px;">
+                    <div class="layui-col-md6">
+                      <label class="layui-form-label">设计单位:</label>
+                      <span class="layui-form-mid">青海共和清洁供热</span>
+                    </div>
+                    <div class="layui-col-md6">
+                      <label class="layui-form-label">录入人:</label>
+                      <span class="layui-form-mid">李明</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 备注信息区域 -->
+          <div class="kr-grid-item"
+               data-gs-id="remarks"
+               data-gs-x="8" data-gs-y="6" data-gs-w="4" data-gs-h="4">
+            <div class="kr-grid-item-content">
+              <div class="layui-card">
+                <div class="layui-card-header">备注信息</div>
+                <div class="layui-card-body">
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">备注:</label>
+                    <div class="layui-input-block">
+                      <span class="layui-form-mid">暂无</span>
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">业务类型:</label>
+                    <div class="layui-input-block">
+                      <span class="layui-form-mid">请选择</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 附件信息区域 -->
+          <div class="kr-grid-item"
+               data-gs-id="attachments"
+               data-gs-x="0" data-gs-y="10" data-gs-w="12" data-gs-h="3">
+            <div class="kr-grid-item-content">
+              <div class="layui-card">
+                <div class="layui-card-header">附件信息</div>
+                <div class="layui-card-body">
+                  <table class="layui-table">
+                    <thead>
+                      <tr>
+                        <th>文件名称</th>
+                        <th>文件大小</th>
+                        <th>上传人</th>
+                        <th>上传时间</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="4" style="text-align: center; color: #999;">暂无附件</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 审批历史区域 -->
+          <div class="kr-grid-item"
+               data-gs-id="approval_history"
+               data-gs-x="0" data-gs-y="13" data-gs-w="12" data-gs-h="4">
+            <div class="kr-grid-item-content">
+              <div class="layui-card">
+                <div class="layui-card-header">审批历史</div>
+                <div class="layui-card-body">
+                  <div class="layui-timeline">
+                    <div class="layui-timeline-item">
+                      <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                      <div class="layui-timeline-content layui-text">
+                        <h3 class="layui-timeline-title">2019-12-25 18:56</h3>
+                        <p>申请人：李明 - 提交申请</p>
+                      </div>
+                    </div>
+                    <div class="layui-timeline-item">
+                      <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                      <div class="layui-timeline-content layui-text">
+                        <h3 class="layui-timeline-title">2019-12-26 18:26</h3>
+                        <p>审批人：张三 - 审批通过</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/assets/layui/layui.js"></script>
+  <script>
+    <%= KrGridLayout.generate({columns: 12, cellHeight: 80, items: []})[:js] %>
+  </script>
+</body>
+</html>

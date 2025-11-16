@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.5.6/css/layui.css">
+  <style>
+    <%= css %>
+    
+    /* 自定义样式 */
+    body {
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .layui-form-label {
+      width: 110px;
+    }
+    
+    .layui-input-inline {
+      width: 190px;
+    }
+    
+    .layui-btn-container {
+      margin-bottom: 10px;
+    }
+    
+    .layui-title {
+      text-align: center;
+      font-size: 24px;
+      margin: 20px 0;
+    }
+    
+    .layui-tab {
+      margin-top: 20px;
+    }
+    
+    .required:before {
+      content: "* ";
+      color: red;
+    }
+    
+    .kr-grid-layout {
+      min-height: auto !important;
+    }
+    
+    .kr-grid-item {
+      min-height: auto !important;
+      height: auto !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container layui-form">
+    <div class="layui-btn-container" style="margin-bottom: 15px;">
+      <a href="/separated/" class="layui-btn layui-btn-primary">
+        <i class="layui-icon layui-icon-return"></i> 返回
+      </a>
+      <a href="/separated/designer?layout=<%= params[:layout] %>&content=<%= params[:content] %>" class="layui-btn layui-btn-normal">
+        <i class="layui-icon layui-icon-edit"></i> 设计器模式
+      </a>
+    </div>
+    
+    <%= html %>
+  </div>
+  
+  <script src="https://www.layuicdn.com/layui-v2.5.6/layui.js"></script>
+  <script>
+    <%= js %>
+    
+    // Layui模块初始化
+    layui.use(['form', 'laydate', 'upload'], function(){
+      var form = layui.form;
+      var laydate = layui.laydate;
+      var upload = layui.upload;
+      
+      // 日期选择器
+      laydate.render({
+        elem: '#date'
+      });
+      
+      laydate.render({
+        elem: '#start_date'
+      });
+      
+      laydate.render({
+        elem: '#end_date'
+      });
+      
+      laydate.render({
+        elem: '#application_date'
+      });
+      
+      // 文件上传
+      upload.render({
+        elem: '#upload-files',
+        url: '',
+        multiple: true,
+        done: function(res){
+          console.log(res);
+        }
+      });
+      
+      // 表单提交
+      form.on('submit(formSubmit)', function(data){
+        console.log(data.field);
+        return false;
+      });
+    });
+  </script>
+</body>
+</html>

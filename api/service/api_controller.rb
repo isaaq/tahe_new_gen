@@ -1,5 +1,8 @@
 require_relative '../../lib/util/auth'
 require_relative '../../lib/util/jwt_auth'
+require_relative '../routes/query_routes'
+require_relative '../routes/kr_tag_generation_routes'
+require_relative '../routes/plugin_store_routes'
 
 class ApiController < Sinatra::Base
   # puts "=== Loading ApiController ==="
@@ -42,6 +45,9 @@ class ApiController < Sinatra::Base
   # 注册解析引擎路由
   register ParseRoutes
   register FeedbackRoutes
+  register QueryRoutes
+  register KrTagGenerationRoutes
+  register PluginStoreRoutes
 
   after do
     _routes

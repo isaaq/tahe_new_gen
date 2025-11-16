@@ -1,0 +1,48 @@
+# 投标项目信息登记 - 网格布局DSL示例
+# 布局与内容完全分离，简洁明了
+
+# 网格配置
+grid 12
+cell_height 80
+margin 10
+
+# 网格项 - 只描述位置和大小，内容是纯KR标签
+item id="basic_info" x=0 y=0 w=12 h=6 {
+  <kr:section title="基本信息">
+    <kr:readonly_field name="date" label="日期" value="2024-05-01" />
+    <kr:readonly_field name="project_number" label="项目编号" value="2023Y00016" />
+    <kr:readonly_field name="project_category" label="项目类别" value="青海共和清洁供热项目" />
+    <kr:readonly_field name="contractor" label="承包人" value="李志华" />
+    <kr:readonly_field name="contact_phone" label="联系电话" value="17304568300" />
+    <kr:readonly_field name="design_capacity" label="设计投资额" value="8,000.00" />
+  </kr:section>
+}
+
+item id="project_details" x=0 y=6 w=8 h=4 {
+  <kr:section title="项目详情">
+    <kr:readonly_field name="location" label="所在地区" value="青海" />
+    <kr:readonly_field name="project_nature" label="项目性质" value="建设" />
+    <kr:readonly_field name="design_unit" label="设计单位" value="青海共和清洁供热" />
+    <kr:readonly_field name="applicant" label="录入人" value="李明" />
+  </kr:section>
+}
+
+item id="remarks" x=8 y=6 w=4 h=4 {
+  <kr:section title="备注信息">
+    <kr:readonly_field name="remarks" label="备注" value="" />
+    <kr:readonly_field name="business_type" label="业务类型" value="请选择" />
+  </kr:section>
+}
+
+item id="attachments" x=0 y=10 w=12 h=3 {
+  <kr:attachment_list 
+    title="附件信息" 
+    source="/api/bidding_projects/attachments"
+    columns="filename,size,uploader,upload_time" />
+}
+
+item id="approval_history" x=0 y=13 w=12 h=4 {
+  <kr:approval_history 
+    title="审批历史" 
+    source="/api/bidding_projects/approval_history" />
+}

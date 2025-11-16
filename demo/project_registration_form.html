@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>立项信息登记</title>
+  
+  <!-- 引入Layui -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/css/layui.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/layui.min.js"></script>
+  
+  <!-- 引入GridStack -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@7.2.3/dist/gridstack.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@7.2.3/dist/gridstack-all.js"></script>
+  
+  <!-- 添加样式 -->
+  <style>
+    body {
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+      /* 移除最小高度限制，允许容器自然扩展 */
+    }
+    .layui-form-label {
+      width: 110px;
+    }
+    .layui-input-inline {
+      width: 190px;
+    }
+    .layui-btn-container {
+      margin-bottom: 10px;
+    }
+    .layui-title {
+      text-align: center;
+      font-size: 24px;
+      margin: 20px 0;
+    }
+    .layui-tab {
+      margin-top: 20px;
+    }
+    .required:before {
+      content: "* ";
+      color: red;
+    }
+    .kr-grid-layout {
+  position: relative;
+  width: 100%;
+  padding-bottom: 40px; /* 为底部留出空间 */
+  box-sizing: border-box;
+  /* 移除最小高度限制，允许布局自然扩展 */
+}
+
+.kr-grid-item {
+  position: absolute;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  background: #fff;
+  overflow: visible;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.kr-grid-item-content {
+  padding: 15px;
+  flex: 1;
+  min-height: 0;
+  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 设计器模式样式 */
+.kr-grid-layout.designer-mode .kr-grid-item {
+  border: 2px dashed #409eff;
+  cursor: move;
+}
+
+.kr-grid-layout.designer-mode .kr-grid-item:hover {
+  border-color: #67c23a;
+  box-shadow: 0 2px 8px rgba(103, 194, 58, 0.3);
+}
+
+.kr-grid-layout.designer-mode .kr-grid-item.selected {
+  border-color: #f56c6c;
+  box-shadow: 0 2px 8px rgba(245, 108, 108, 0.3);
+}
+
+  </style>
+</head>
+<body>
+  <div class="container layui-form">
+    <div class="kr-grid-layout" data-grid-config='{"columns":12,"cellHeight":80,"margin":10,"items":[{"id":"toolbar","x":0,"y":0,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"page_title","x":0,"y":1,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"tabs","x":0,"y":2,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"basic_info","x":0,"y":3,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"form_row1","x":0,"y":4,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"form_row2","x":0,"y":6,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"form_row3","x":0,"y":8,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"form_row4","x":0,"y":10,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"form_row5","x":0,"y":12,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"client_info_title","x":0,"y":14,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"client_info_form","x":0,"y":15,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"client_info_form2","x":0,"y":17,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"applicant_info_title","x":0,"y":19,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"applicant_info_form","x":0,"y":20,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"applicant_info_form2","x":0,"y":22,"w":12,"h":2,"resizable":true,"draggable":true},{"id":"remarks_title","x":0,"y":24,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"remarks_content","x":0,"y":25,"w":12,"h":3,"resizable":true,"draggable":true},{"id":"attachments_title","x":0,"y":28,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"attachments_upload","x":0,"y":29,"w":12,"h":1,"resizable":true,"draggable":true},{"id":"attachments_list","x":0,"y":30,"w":12,"h":3,"resizable":true,"draggable":true}]}'>
+<div class="kr-grid-item " 
+     data-gs-id="toolbar"
+     data-gs-x="0" 
+     data-gs-y="0" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-btn-container'>
+    <button class='layui-btn layui-btn-primary'><i class='layui-icon layui-icon-save'></i> 保存</button>
+    <button class='layui-btn layui-btn-primary'><i class='layui-icon layui-icon-submit'></i> 保存并提交</button>
+    <button class='layui-btn '><i class='layui-icon layui-icon-data'></i> 显示数据</button>
+    <button class='layui-btn '><i class='layui-icon layui-icon-database'></i> 基础数据</button>
+    <button class='layui-btn '><i class='layui-icon layui-icon-sign'></i> 加签</button>
+    <button class='layui-btn '><i class='layui-icon layui-icon-return'></i> 退回重填</button>
+    <button class='layui-btn '><i class='layui-icon layui-icon-import'></i> 导入</button>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="page_title"
+     data-gs-x="0" 
+     data-gs-y="1" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <h2 class='layui-title'>立项信息登记</h2>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="tabs"
+     data-gs-x="0" 
+     data-gs-y="2" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-tab layui-tab-brief'><ul class='layui-tab-title'>
+    <li class='layui-this'>基本信息</li>
+    <li class=''>详细施工信息</li>
+    <li class=''>材料设备清单</li>
+  </ul></div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="basic_info"
+     data-gs-x="0" 
+     data-gs-y="3" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <fieldset class='layui-elem-field layui-field-title'><legend>基本信息</legend></fieldset>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row1"
+     data-gs-x="0" 
+     data-gs-y="4" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>日期</label><div class='layui-input-inline'><input type='text' name='date' class='layui-input' id='date'  value='2025-07-18' ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>关联中标信息登记单</label><div class='layui-input-inline'><select name='project_related_doc' ><option value=''>请选择</option></select></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>项目编号</label><div class='layui-input-inline'><input type='text' name='project_number' class='layui-input'   placeholder='保存后自动生成'></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row2"
+     data-gs-x="0" 
+     data-gs-y="6" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>计划开始日期</label><div class='layui-input-inline'><input type='text' name='plan_start_date' class='layui-input' id='plan_start_date' required lay-verify='required'  ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>计划结束日期</label><div class='layui-input-inline'><input type='text' name='plan_end_date' class='layui-input' id='plan_end_date' required lay-verify='required'  ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>所属区域</label><div class='layui-input-inline'><input type='text' name='project_location' class='layui-input'   ></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row3"
+     data-gs-x="0" 
+     data-gs-y="8" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>工程名称</label><div class='layui-input-inline'><input type='text' name='project_name' class='layui-input' required lay-verify='required'  ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>工程施工内容</label><div class='layui-input-inline'><input type='text' name='project_content' class='layui-input' required lay-verify='required'  ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>工程报价</label><div class='layui-input-inline'><input type='number' name='project_price' class='layui-input' required lay-verify='required'  ></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row4"
+     data-gs-x="0" 
+     data-gs-y="10" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>造价(大写)</label><div class='layui-input-inline'><input type='text' name='construction_unit' class='layui-input'   ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>项目类型</label><div class='layui-input-inline'><select name='project_type' ><option value=''>请选择</option></select></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>质量等级</label><div class='layui-input-inline'><select name='quality_level' ><option value=''>请选择</option></select></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row5"
+     data-gs-x="0" 
+     data-gs-y="12" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>项目状态</label><div class='layui-input-inline'><select name='project_status' ><option value=''>请选择</option></select></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>业务类型</label><div class='layui-input-inline'><select name='business_type' ><option value=''>请选择</option></select></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>项目负责人</label><div class='layui-input-inline'><select name='project_manager' ><option value=''>请选择</option></select></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="client_info_title"
+     data-gs-x="0" 
+     data-gs-y="14" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <fieldset class='layui-elem-field layui-field-title'><legend>甲方信息</legend></fieldset>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="client_info_form"
+     data-gs-x="0" 
+     data-gs-y="15" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>甲方方式</label><div class='layui-input-inline'><input type='text' name='client_method' class='layui-input'   ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>联系人</label><div class='layui-input-inline'><input type='text' name='client_person' class='layui-input'   ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>联系方式</label><div class='layui-input-inline'><input type='text' name='client_contact' class='layui-input'   ></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="client_info_form2"
+     data-gs-x="0" 
+     data-gs-y="17" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>部门</label><div class='layui-input-inline'><input type='text' name='client_department' class='layui-input'   ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>总经办</label><div class='layui-input-inline'><input type='text' name='client_position' class='layui-input'   ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>所属公司</label><div class='layui-input-inline'><input type='text' name='client_company' class='layui-input'  value='定西工程建设有限公司' ></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="applicant_info_title"
+     data-gs-x="0" 
+     data-gs-y="19" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <fieldset class='layui-elem-field layui-field-title'><legend>立项人基本资料</legend></fieldset>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="applicant_info_form"
+     data-gs-x="0" 
+     data-gs-y="20" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>立项人</label><div class='layui-input-inline'><input type='text' name='applicant' class='layui-input'  value='张鑫' ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>部门</label><div class='layui-input-inline'><input type='text' name='applicant_department' class='layui-input'   ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>总经办</label><div class='layui-input-inline'><input type='text' name='applicant_position' class='layui-input'   ></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="applicant_info_form2"
+     data-gs-x="0" 
+     data-gs-y="22" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-form-item'>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>联系电话</label><div class='layui-input-inline'><input type='text' name='applicant_phone' class='layui-input' required lay-verify='required'  ></div></div>
+    <div class='layui-inline' style='width: 33%;'><label class='layui-form-label'>所属公司</label><div class='layui-input-inline'><input type='text' name='applicant_company' class='layui-input'  value='定西工程建设有限公司' ></div></div>
+  </div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="remarks_title"
+     data-gs-x="0" 
+     data-gs-y="24" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <fieldset class='layui-elem-field layui-field-title'><legend>备注</legend></fieldset>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="remarks_content"
+     data-gs-x="0" 
+     data-gs-y="25" 
+     data-gs-w="12" 
+     data-gs-h="3"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <div class='layui-inline' ><label class='layui-form-label'>remarks</label><div class='layui-input-inline'><textarea name='remarks' class='layui-textarea'  ></textarea></div></div>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="attachments_title"
+     data-gs-x="0" 
+     data-gs-y="28" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <fieldset class='layui-elem-field layui-field-title'><legend>附件</legend></fieldset>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="attachments_upload"
+     data-gs-x="0" 
+     data-gs-y="29" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <button type='button' class='layui-btn' id='attachments'><i class='layui-icon'>&#xe67c;</i>上传文件</button>
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="attachments_list"
+     data-gs-x="0" 
+     data-gs-y="30" 
+     data-gs-w="12" 
+     data-gs-h="3"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    <table class='layui-table'><thead><tr>
+    <th>文件名称</th>
+    <th>文件大小</th>
+    <th>上传人</th>
+    <th>上传时间</th>
+  </tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+</div>
+  </div>
+  
+  <!-- 添加脚本 -->
+  <script>
+    layui.use(['form', 'laydate', 'upload', 'table'], function(){
+      var form = layui.form;
+      var laydate = layui.laydate;
+      var upload = layui.upload;
+      var table = layui.table;
+      
+      // 初始化日期选择器
+      laydate.render({
+        elem: '#date'
+      });
+      laydate.render({
+        elem: '#plan_start_date'
+      });
+      laydate.render({
+        elem: '#plan_end_date'
+      });
+      
+      // 初始化上传组件
+      upload.render({
+        elem: '#attachments',
+        url: '/upload/',
+        multiple: true,
+        done: function(res){
+          console.log(res);
+        }
+      });
+      
+      // 表单提交
+      form.on('submit(formSubmit)', function(data){
+        console.log(data.field);
+        return false;
+      });
+    });
+    
+    // KR 网格布局初始化
+(function() {
+  const gridLayout = document.querySelector('.kr-grid-layout');
+  if (!gridLayout) return;
+  
+  const config = JSON.parse(gridLayout.getAttribute('data-grid-config') || '{}');
+  
+  // 初始化网格项位置
+  function initGridItems() {
+    const items = gridLayout.querySelectorAll('.kr-grid-item');
+    const cellWidth = gridLayout.offsetWidth / (config.columns || 12);
+    const cellHeight = config.cellHeight || 60;
+    
+    // 计算最大Y坐标和高度，用于设置布局容器高度
+    let maxY = 0;
+    let maxHeight = 0;
+    
+    items.forEach(item => {
+      const x = parseInt(item.getAttribute('data-gs-x')) || 0;
+      const y = parseInt(item.getAttribute('data-gs-y')) || 0;
+      const w = parseInt(item.getAttribute('data-gs-w')) || 1;
+      const h = parseInt(item.getAttribute('data-gs-h')) || 1;
+      
+      // 更新最大Y坐标和高度
+      const itemBottom = y + h;
+      if (itemBottom > maxY) {
+        maxY = itemBottom;
+      }
+      
+      item.style.left = (x * cellWidth) + 'px';
+      item.style.top = (y * cellHeight) + 'px';
+      item.style.width = (w * cellWidth) + 'px';
+      item.style.minHeight = (h * cellHeight) + 'px';
+      // 移除固定高度，使用最小高度代替
+    });
+    
+    // 设置布局容器的最小高度，确保能容纳所有网格项
+    gridLayout.style.minHeight = ((maxY + 1) * cellHeight) + 'px';
+  }
+  
+  // 设计器模式切换
+  window.toggleDesignerMode = function() {
+    gridLayout.classList.toggle('designer-mode');
+  };
+  
+  // 获取布局配置
+  window.getGridConfig = function() {
+    const items = [];
+    gridLayout.querySelectorAll('.kr-grid-item').forEach(item => {
+      items.push({
+        id: item.getAttribute('data-gs-id'),
+        x: parseInt(item.getAttribute('data-gs-x')),
+        y: parseInt(item.getAttribute('data-gs-y')),
+        w: parseInt(item.getAttribute('data-gs-w')),
+        h: parseInt(item.getAttribute('data-gs-h'))
+      });
+    });
+    return { items };
+  };
+  
+  // 初始化
+  initGridItems();
+  
+  // 响应式调整
+  window.addEventListener('resize', initGridItems);
+})();
+
+    
+    // 设计器模式切换
+    function toggleDesignMode() {
+      if (typeof toggleGridDesignerMode === 'function') {
+        toggleGridDesignerMode(true);
+      }
+    }
+  </script>
+</body>
+</html>

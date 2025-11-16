@@ -1,0 +1,305 @@
+# 用户管理模板配置
+# 基于JeeSite Demo的用户管理界面设计
+
+# 基础元数据
+metadata:
+  id: user_management
+  name: "用户管理系统"
+  description: "左树右表布局的用户管理界面，包含组织架构树和用户列表"
+  version: "1.0.0"
+  author: "kr_new_gen"
+  category: "system_management"
+  tags: ["user", "organization", "tree_table", "crud"]
+
+# 布局配置
+layout:
+  type: tree_table_layout
+  responsive: true
+  theme: "default"
+  
+# 页面配置
+page:
+  title: "用户管理"
+  breadcrumb:
+    - name: "系统管理"
+    - name: "组织管理" 
+    - name: "用户管理"
+      active: true
+
+# 树组件配置（左侧组织架构）
+tree_config:
+  title: "组织机构"
+  data_source:
+    url: "/api/org/tree"
+    method: "GET"
+    response_format: "standard"
+  
+  # 树形控件特性
+  features:
+    search: true
+    toolbar: ["add", "refresh", "expand", "collapse"]
+    checkbar: false
+    contextmenu: true
+    
+  # 显示配置
+  display:
+    show_line: true
+    accordion: false
+    init_level: 2
+    width: "300px"
+    height: "500px"
+    
+  # 工具栏按钮配置
+  toolbar_buttons:
+    add:
+      text: "添加"
+      icon: "layui-icon-add-1"
+      action: "add_org"
+    refresh:
+      text: "刷新"
+      icon: "layui-icon-refresh"
+      action: "refresh_tree"
+    expand:
+      text: "展开"
+      icon: "layui-icon-down"
+      action: "expand_all"
+    collapse:
+      text: "收起"
+      icon: "layui-icon-right"
+      action: "collapse_all"
+
+# 表格组件配置（右侧用户列表）
+table_config:
+  title: "用户管理"
+  data_source:
+    url: "/api/users"
+    method: "GET"
+    response_format: "standard"
+    
+  # 分页配置
+  pagination:
+    enabled: true
+    default_limit: 20
+    limits: [10, 20, 50, 100]
+    
+  # 表格特性
+  features:
+    search_form: true
+    toolbar: true
+    frozen_cols: 1
+    action_col: true
+    checkbox: true
+    export: true
+    import: true
+    
+  # 搜索表单配置
+  search_form:
+    fields:
+      - name: "login_name"
+        label: "账号"
+        type: "text"
+        placeholder: "请输入登录账号"
+        width: 120
+      - name: "nickname"
+        label: "昵称"
+        type: "text"
+        placeholder: "请输入用户昵称"
+        width: 120
+      - name: "real_name"
+        label: "姓名"
+        type: "text"
+        placeholder: "请输入员工姓名"
+        width: 120
+      - name: "mobile"
+        label: "手机"
+        type: "text"
+        placeholder: "请输入手机号"
+        width: 120
+      - name: "status"
+        label: "状态"
+        type: "select"
+        options:
+          - value: ""
+            text: "全部"
+          - value: "0"
+            text: "正常"
+          - value: "1"
+            text: "停用"
+        width: 100
+    
+    # 搜索按钮配置
+    buttons:
+      query:
+        text: "查询"
+        type: "primary"
+        icon: "layui-icon-search"
+      reset:
+        text: "重置"
+        type: "default"
+        icon: "layui-icon-refresh"
+      more:
+        text: "更多"
+        type: "default"
+        icon: "layui-icon-more"
+        
+  # 表格列配置
+  columns:
+    - field: "id"
+      title: "ID"
+      width: 80
+      sort: true
+      fixed: "left"
+      type: "checkbox"
+      
+    - field: "login_name"
+      title: "登录账号"
+      width: 120
+      sort: true
+      link: true
+      link_action: "view_user"
+      
+    - field: "nickname"
+      title: "用户昵称"
+      width: 120
+      sort: true
+      
+    - field: "real_name"
+      title: "员工姓名"
+      width: 120
+      sort: true
+      
+    - field: "org_name"
+      title: "归属机构"
+      width: 150
+      sort: true
+      
+    - field: "company_name"
+      title: "归属公司"
+      width: 150
+      sort: true
+      
+    - field: "update_date"
+      title: "更新时间"
+      width: 150
+      sort: true
+      format: "datetime"
+      
+    - field: "status"
+      title: "状态"
+      width: 100
+      sort: true
+      type: "status"
+      status_map:
+        "0": 
+          text: "正常"
+          class: "layui-badge layui-bg-green"
+        "1":
+          text: "停用"
+          class: "layui-badge layui-bg-gray"
+          
+    - title: "操作"
+      width: 150
+      fixed: "right"
+      toolbar: "user_action_bar"
+      
+  # 操作列按钮配置
+  action_buttons:
+    edit:
+      text: "编辑"
+      icon: "layui-icon-edit"
+      type: "primary"
+      action: "edit_user"
+    delete:
+      text: "删除"
+      icon: "layui-icon-delete"
+      type: "danger"
+      action: "delete_user"
+      confirm: true
+    view:
+      text: "查看"
+      icon: "layui-icon-eye"
+      type: "default"
+      action: "view_user"
+      
+  # 工具栏按钮配置
+  toolbar_buttons:
+    hide:
+      text: "隐藏"
+      type: "default"
+      icon: "layui-icon-hide"
+      action: "hide_columns"
+    export:
+      text: "导出"
+      type: "default"
+      icon: "layui-icon-export"
+      action: "export_users"
+    import:
+      text: "导入"
+      type: "default"
+      icon: "layui-icon-import"
+      action: "import_users"
+    add:
+      text: "新增"
+      type: "primary"
+      icon: "layui-icon-add-1"
+      action: "add_user"
+
+# 联动配置
+linkage:
+  enabled: true
+  param: "org_id"
+  type: "click"
+  description: "点击组织架构树节点时，筛选该组织下的用户"
+  
+  # 联动行为配置
+  behavior:
+    auto_reload: true
+    show_loading: true
+    clear_selection: false
+
+# 事件配置
+events:
+  # 树事件
+  tree:
+    node_click:
+      action: "filter_users_by_org"
+      description: "点击树节点时筛选用户"
+      
+  # 表格事件
+  table:
+    row_click:
+      action: "view_user_detail"
+      description: "点击表格行时查看用户详情"
+    row_dblclick:
+      action: "edit_user"
+      description: "双击表格行时编辑用户"
+      
+# 权限配置
+permissions:
+  tree:
+    add_org: "org:add"
+    edit_org: "org:edit"
+    delete_org: "org:delete"
+    
+  table:
+    add_user: "user:add"
+    edit_user: "user:edit"
+    delete_user: "user:delete"
+    view_user: "user:view"
+    export_users: "user:export"
+    import_users: "user:import"
+
+# 样式配置
+styles:
+  theme: "default"
+  colors:
+    primary: "#1E9FFF"
+    success: "#5FB878"
+    warning: "#FFB800"
+    danger: "#FF5722"
+    
+  layout:
+    sidebar_width: "200px"
+    header_height: "60px"
+    content_padding: "15px"
+

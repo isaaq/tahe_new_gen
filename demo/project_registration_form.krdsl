@@ -1,0 +1,180 @@
+# 立项信息登记表单 - 网格布局版本
+# 基于GridStack.js思想，布局与内容完全分离
+
+title "立项信息登记"
+description "项目立项信息登记表单"
+grid 12
+cell_height 80
+margin 10
+static_grid true
+disable_drag false
+disable_resize false
+animate true
+
+# 顶部工具栏
+section "顶部工具栏"
+
+item id="toolbar" x=0 y=0 w=12 h=2 {
+  <kr:toolbar>
+    <kr:button text="保存" icon="save" theme="primary" />
+    <kr:button text="保存并提交" icon="submit" theme="primary" />
+    <kr:button text="显示数据" icon="data" />
+    <kr:button text="基础数据" icon="database" />
+    <kr:button text="加签" icon="sign" />
+    <kr:button text="退回重填" icon="return" />
+    <kr:button text="导入" icon="import" />
+  </kr:toolbar>
+}
+
+# 标题区域
+section "标题区域"
+
+item id="page_title" x=0 y=1 w=12 h=1 {
+  <kr:page_title title="立项信息登记" />
+}
+
+# 选项卡区域
+section "选项卡区域"
+
+item id="tabs" x=0 y=2 w=12 h=1 {
+  <kr:tabs>
+    <kr:tab title="基本信息" active="true" />
+    <kr:tab title="详细施工信息" />
+    <kr:tab title="材料设备清单" />
+  </kr:tabs>
+}
+
+# 基本信息区域
+section "基本信息区域"
+
+item id="basic_info" x=0 y=3 w=12 h=1 {
+  <kr:section title="基本信息" />
+}
+
+# 第一行表单
+item id="form_row1" x=0 y=4 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="date" label="日期" type="date" value="2025-07-18" width="33%" />
+    <kr:form_field name="project_related_doc" label="关联中标信息登记单" type="select" width="33%" />
+    <kr:form_field name="project_number" label="项目编号" type="text" placeholder="保存后自动生成" width="33%" />
+  </kr:form_row>
+}
+
+# 第二行表单
+item id="form_row2" x=0 y=6 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="plan_start_date" label="计划开始日期" type="date" required="true" width="33%" />
+    <kr:form_field name="plan_end_date" label="计划结束日期" type="date" required="true" width="33%" />
+    <kr:form_field name="project_location" label="所属区域" type="text" width="33%" />
+  </kr:form_row>
+}
+
+# 第三行表单
+item id="form_row3" x=0 y=8 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="project_name" label="工程名称" type="text" required="true" width="33%" />
+    <kr:form_field name="project_content" label="工程施工内容" type="text" required="true" width="33%" />
+    <kr:form_field name="project_price" label="工程报价" type="number" required="true" width="33%" />
+  </kr:form_row>
+}
+
+# 第四行表单
+item id="form_row4" x=0 y=10 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="construction_unit" label="造价(大写)" type="text" width="33%" />
+    <kr:form_field name="project_type" label="项目类型" type="select" width="33%" />
+    <kr:form_field name="quality_level" label="质量等级" type="select" width="33%" />
+  </kr:form_row>
+}
+
+# 第五行表单
+item id="form_row5" x=0 y=12 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="project_status" label="项目状态" type="select" width="33%" />
+    <kr:form_field name="business_type" label="业务类型" type="select" width="33%" />
+    <kr:form_field name="project_manager" label="项目负责人" type="select" width="33%" search="true" />
+  </kr:form_row>
+}
+
+# 甲方信息区域
+section "甲方信息区域"
+
+item id="client_info_title" x=0 y=14 w=12 h=1 {
+  <kr:section title="甲方信息" />
+}
+
+# 甲方信息表单
+item id="client_info_form" x=0 y=15 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="client_method" label="甲方方式" type="text" width="33%" />
+    <kr:form_field name="client_person" label="联系人" type="text" width="33%" />
+    <kr:form_field name="client_contact" label="联系方式" type="text" width="33%" />
+  </kr:form_row>
+}
+
+# 甲方信息表单第二行
+item id="client_info_form2" x=0 y=17 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="client_department" label="部门" type="text" width="33%" />
+    <kr:form_field name="client_position" label="总经办" type="text" width="33%" />
+    <kr:form_field name="client_company" label="所属公司" type="text" value="定西工程建设有限公司" width="33%" />
+  </kr:form_row>
+}
+
+# 立项人基本资料区域
+section "立项人基本资料区域"
+
+item id="applicant_info_title" x=0 y=19 w=12 h=1 {
+  <kr:section title="立项人基本资料" />
+}
+
+# 立项人信息表单
+item id="applicant_info_form" x=0 y=20 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="applicant" label="立项人" type="text" value="张鑫" width="33%" />
+    <kr:form_field name="applicant_department" label="部门" type="text" width="33%" />
+    <kr:form_field name="applicant_position" label="总经办" type="text" width="33%" />
+  </kr:form_row>
+}
+
+# 立项人信息表单第二行
+item id="applicant_info_form2" x=0 y=22 w=12 h=2 {
+  <kr:form_row>
+    <kr:form_field name="applicant_phone" label="联系电话" type="text" required="true" width="33%" />
+    <kr:form_field name="applicant_company" label="所属公司" type="text" value="定西工程建设有限公司" width="33%" />
+  </kr:form_row>
+}
+
+# 备注区域
+section "备注区域"
+
+item id="remarks_title" x=0 y=24 w=12 h=1 {
+  <kr:section title="备注" />
+}
+
+# 备注内容
+item id="remarks_content" x=0 y=25 w=12 h=3 {
+  <kr:form_field name="remarks" type="textarea" rows="5" />
+}
+
+# 附件区域
+section "附件区域"
+
+item id="attachments_title" x=0 y=28 w=12 h=1 {
+  <kr:section title="附件" />
+}
+
+# 附件上传
+item id="attachments_upload" x=0 y=29 w=12 h=1 {
+  <kr:file_upload id="attachments" multiple="true" />
+}
+
+# 附件列表
+item id="attachments_list" x=0 y=30 w=12 h=3 {
+  <kr:file_list>
+    <kr:table_column field="name" title="文件名称" />
+    <kr:table_column field="size" title="文件大小" />
+    <kr:table_column field="uploader" title="上传人" />
+    <kr:table_column field="upload_time" title="上传时间" />
+  </kr:file_list>
+}

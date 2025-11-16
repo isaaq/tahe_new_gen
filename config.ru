@@ -1,3 +1,6 @@
+# 加载补丁文件，修复 Radius gem 中的问题
+require_relative './lib/patches/radius_patch'
+
 require 'sinatra'
 require 'sinatra/base'
 require 'sinatra/content_for'
@@ -19,6 +22,19 @@ require_relative './lib/util/common'
 require_relative './lib/model/_config'
 require_relative './lib/biz/_config'
 require_relative './lib/middleware/static_pages_middleware'
+require_relative './api/service/separated_layout_controller'
+require_relative './api/service/employee_controller'
+require_relative './api/service/employee_full_controller'
+require_relative './api/service/ai_generator_controller'
+require_relative './api/service/plugin_store_controller'
+
+# 初始化插件商店（在系统完全加载后）
+begin
+  require_relative './lib/plugins/store/initialize_plugin_store'
+  InitializePluginStore.init! if defined?(InitializePluginStore)
+rescue => e
+  puts "插件商店初始化失败: #{e.message}" if ENV['RACK_ENV'] != 'production'
+end
 
 Dir.glob(['./api/_config.rb']).each do |file|
   "装载配置#{file}" if development?
@@ -44,3 +60,9 @@ use StaticPagesMiddleware, {
 
 map('/api') { run TaheController }
 map('/sys') { run SystemController }
+map('/grid') { run GridDemoController }
+map('/separated') { run SeparatedLayoutController }
+map('/emp') { run EmployeeController }
+map('/full') { run EmployeeFullController }
+map('/ai') { run AiGeneratorController }
+map('/plugin-store') { run PluginStoreController }

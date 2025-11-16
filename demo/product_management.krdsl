@@ -1,0 +1,71 @@
+# 产品管理页面 DSL 示例
+# 展示完整的 kr->layui->html+runtime 流程
+
+page "产品管理系统"
+layout admin
+theme default
+
+# 左树右表布局
+component tree_table_layout
+  tree_title: "产品分类"
+  table_title: "产品列表"
+  tree_source: "/api/categories"
+  table_source: "/api/products"
+  columns: [
+    {field: "id", title: "ID", width: 80, sort: true},
+    {field: "name", title: "产品名称", width: 200},
+    {field: "price", title: "价格", width: 120},
+    {field: "status", title: "状态", width: 100},
+    {field: "created_at", title: "创建时间", width: 180}
+  ]
+
+# 搜索表格
+component search_table
+  table_title: "搜索结果"
+  table_source: "/api/products/search"
+  search_fields: [
+    {type: "input", name: "keyword", label: "关键词", placeholder: "请输入产品名称"},
+    {type: "select", name: "category", label: "分类", options: [
+      {value: "electronics", text: "电子产品"},
+      {value: "clothing", text: "服装"},
+      {value: "books", text: "图书"}
+    ]},
+    {type: "date_range", name: "date_range", label: "创建时间", placeholder: "请选择时间范围"}
+  ]
+  columns: [
+    {field: "id", title: "ID", width: 80},
+    {field: "name", title: "产品名称", width: 200},
+    {field: "category", title: "分类", width: 120},
+    {field: "price_range", title: "价格区间", width: 150},
+    {field: "status", title: "状态", width: 100}
+  ]
+
+# CRUD 管理面板
+component crud_panel
+  title: "产品管理"
+  api_base: "/api/products"
+  columns: [
+    {type: "checkbox", fixed: "left"},
+    {field: "id", title: "ID", width: 80, sort: true},
+    {field: "name", title: "产品名称", width: 200, edit: "text"},
+    {field: "price", title: "价格", width: 120, edit: "text"},
+    {field: "category", title: "分类", width: 120},
+    {field: "status", title: "状态", width: 100},
+    {fixed: "right", title: "操作", width: 150, toolbar: "#rowTools"}
+  ]
+
+# 产品表单
+component form
+  title: "产品信息"
+  action: "/api/products/save"
+  fields: [
+    {type: "input", name: "name", label: "产品名称", required: true, placeholder: "请输入产品名称"},
+    {type: "textarea", name: "description", label: "产品描述", placeholder: "请输入产品描述"},
+    {type: "select", name: "category", label: "产品分类", required: true, options: [
+      {value: "electronics", text: "电子产品"},
+      {value: "clothing", text: "服装"},
+      {value: "books", text: "图书"}
+    ]},
+    {type: "number_range", name: "price_range", label: "价格区间"},
+    {type: "input", name: "stock", label: "库存数量", input_type: "number", required: true}
+  ]

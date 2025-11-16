@@ -66,4 +66,8 @@ class TestModel < Test::Unit::TestCase
     result = M[:_组织].test_method
     p result  # 应该输出 "这是 MCOrg 类的测试方法"
   end
+
+  def test_model_field
+    p M[:_组织].fields
+  end
 end

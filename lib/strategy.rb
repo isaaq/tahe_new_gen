@@ -23,7 +23,7 @@ module Strategy
     
     # 加载所有策略插件
     def load_plugins
-      # 查找并加载所有策略插件
+      # 查找并加载所有策略插件（内置插件）
       plugin_pattern = File.join(File.dirname(__FILE__), 'plugins', 'strategy', '**', '*.rb')
       Dir[plugin_pattern].each do |file|
         p "装载插件#{file}" if dev
@@ -33,6 +33,40 @@ module Strategy
       permission_pattern = File.join(File.dirname(__FILE__), 'plugins', 'strategy', 'permission', '**', '*.rb')
       Dir[permission_pattern].each do |file|
         require file
+      end
+      
+      # 加载已安装的商城插件
+      load_installed_store_plugins
+    end
+    
+    # 加载已安装的商城插件
+    def load_installed_store_plugins
+      installed_dir = File.join(File.dirname(__FILE__), 'plugins', 'store', 'installed')
+      return unless File.exist?(installed_dir)
+      
+      # 遍历每个插件目录
+      Dir.glob(File.join(installed_dir, '*')).each do |plugin_dir|
+        next unless File.directory?(plugin_dir)
+        
+        # 将插件目录添加到加载路径
+        $LOAD_PATH.unshift(plugin_dir) unless $LOAD_PATH.include?(plugin_dir)
+        
+        # 加载插件目录下的所有Ruby文件
+        Dir.glob(File.join(plugin_dir, '*.rb')).each do |file|
+          begin
+            file_name = File.basename(file, '.rb')
+            require file_name
+            p "装载商城插件#{file}" if dev
+          rescue => _e
+            # 如果相对路径失败，尝试绝对路径
+            begin
+              require file
+              p "装载商城插件（绝对路径）#{file}" if dev
+            rescue => e2
+              puts "加载商城插件失败 #{file}: #{e2.message}" if dev
+            end
+          end
+        end
       end
     end
     

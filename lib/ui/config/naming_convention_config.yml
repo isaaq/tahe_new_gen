@@ -1,0 +1,47 @@
+# 命名约定配置文件
+# 用于替代硬编码的集合命名模式
+
+# 集合命名模式（按优先级排序）
+# {relation_name} 会被替换为实际的关系名称
+collection_naming_patterns:
+  - "b_{relation_name}s"       # 默认业务模式: package -> b_packages
+  - "b_{relation_name}"         # 单数业务模式: channel -> b_channel
+  - "org_{relation_name}s"      # 组织模式: employee -> org_employees
+  - "sys_{relation_name}s"      # 系统模式: user -> sys_users
+  - "{relation_name}s"          # 简单复数: role -> roles
+  - "{relation_name}"           # 原名: status -> status
+
+# 特殊映射（覆盖自动推断）
+# 用于处理不规则的命名映射
+special_mappings:
+  department: org_departments
+  position: org_positions
+  employee: org_employees
+  org: c_orgs
+  organization: c_orgs
+  user: rbac_users
+
+# 字段类型中文名称映射
+field_type_names:
+  Text: 文本
+  Number: 数字
+  Boolean: 布尔值
+  Date: 日期
+  DateTime: 日期时间
+  Enum: 枚举
+  Link: 关联
+  NumberRange: 数字范围
+  DateRange: 日期范围
+  Coordinate: 坐标
+
+# 是否在生产环境启用自动发现
+# true: 查询MongoDB验证集合是否存在（较慢但准确）
+# false: 仅使用模式匹配（快速但可能不准确）
+enable_auto_discovery: true
+
+# 缓存配置
+cache:
+  memory_ttl: 3600        # 内存缓存TTL（秒）
+  mongo_ttl: 86400        # MongoDB缓存TTL（秒）
+  enable_mongo_cache: true # 是否启用MongoDB持久化缓存
+

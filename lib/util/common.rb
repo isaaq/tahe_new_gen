@@ -55,7 +55,7 @@ module Common
     @r = Redis.new(host: host, port: 6379, password: pass)
     @r.select(1)
     def self.method_missing(symbol, *args)
-      @r.send(symbol, args)
+      @r.send(symbol, *args)
     end
   end
 

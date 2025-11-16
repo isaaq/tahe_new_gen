@@ -1,0 +1,138 @@
+{
+  "title": "立项信息登记",
+  "description": "项目立项信息登记表单",
+  "grid": 12,
+  "cell_height": 80,
+  "margin": 10,
+  "static_grid": true,
+  "disable_drag": false,
+  "disable_resize": false,
+  "animate": true,
+  "sections": [
+    {
+      "name": "顶部工具栏",
+      "items": [
+        {
+          "id": "toolbar",
+          "x": 0, "y": 0, "w": 12, "h": 2
+        }
+      ]
+    },
+    {
+      "name": "标题区域",
+      "items": [
+        {
+          "id": "page_title",
+          "x": 0, "y": 1, "w": 12, "h": 1
+        }
+      ]
+    },
+    {
+      "name": "选项卡区域",
+      "items": [
+        {
+          "id": "tabs",
+          "x": 0, "y": 2, "w": 12, "h": 1
+        }
+      ]
+    },
+    {
+      "name": "基本信息区域",
+      "items": [
+        {
+          "id": "basic_info",
+          "x": 0, "y": 3, "w": 12, "h": 1
+        },
+        {
+          "id": "form_row1",
+          "x": 0, "y": 4, "w": 12, "h": 2
+        },
+        {
+          "id": "form_row2",
+          "x": 0, "y": 6, "w": 12, "h": 2
+        },
+        {
+          "id": "form_row3",
+          "x": 0, "y": 8, "w": 12, "h": 2
+        }
+      ]
+    },
+    {
+      "name": "项目信息区域",
+      "items": [
+        {
+          "id": "project_info",
+          "x": 0, "y": 10, "w": 12, "h": 1
+        },
+        {
+          "id": "form_row4",
+          "x": 0, "y": 11, "w": 12, "h": 2
+        },
+        {
+          "id": "form_row5",
+          "x": 0, "y": 13, "w": 12, "h": 2
+        }
+      ]
+    },
+    {
+      "name": "甲方信息区域",
+      "items": [
+        {
+          "id": "client_info_title",
+          "x": 0, "y": 15, "w": 12, "h": 1
+        },
+        {
+          "id": "client_info_form",
+          "x": 0, "y": 16, "w": 12, "h": 2
+        },
+        {
+          "id": "client_info_form2",
+          "x": 0, "y": 18, "w": 12, "h": 2
+        }
+      ]
+    },
+    {
+      "name": "立项人基本资料区域",
+      "items": [
+        {
+          "id": "applicant_info_title",
+          "x": 0, "y": 20, "w": 12, "h": 1
+        },
+        {
+          "id": "applicant_info_form",
+          "x": 0, "y": 21, "w": 12, "h": 2
+        },
+        {
+          "id": "applicant_info_form2",
+          "x": 0, "y": 23, "w": 12, "h": 2
+        }
+      ]
+    },
+    {
+      "name": "备注区域",
+      "items": [
+        {
+          "id": "remarks",
+          "x": 0, "y": 25, "w": 12, "h": 1
+        },
+        {
+          "id": "remarks_content",
+          "x": 0, "y": 26, "w": 12, "h": 3
+        }
+      ]
+    },
+    {
+      "name": "附件区域",
+      "items": [
+        {
+          "id": "attachments",
+          "x": 0, "y": 29, "w": 12, "h": 1
+        },
+        {
+          "id": "attachment_list",
+          "x": 0, "y": 30, "w": 12, "h": 4
+        }
+      ]
+    }
+  ]
+}

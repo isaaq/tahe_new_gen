@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.5.6/css/layui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@4.2.5/dist/gridstack.min.css">
+  <style>
+    <%= css %>
+    
+    /* 设计器样式 */
+    body {
+      padding: 0;
+      margin: 0;
+      background-color: #f2f2f2;
+      overflow-x: hidden;
+    }
+    
+    .designer-container {
+      display: flex;
+      height: 100vh;
+    }
+    
+    .designer-sidebar {
+      width: 300px;
+      background-color: #fff;
+      border-right: 1px solid #e6e6e6;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .designer-main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .designer-header {
+      height: 50px;
+      background-color: #393D49;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      justify-content: space-between;
+    }
+    
+    .designer-content {
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      min-height: calc(100vh - 130px);
+    }
+    
+    .designer-footer {
+      height: 40px;
+      background-color: #f2f2f2;
+      border-top: 1px solid #e6e6e6;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      justify-content: space-between;
+    }
+    
+    .panel-title {
+      padding: 10px 15px;
+      background-color: #f2f2f2;
+      font-weight: bold;
+      border-bottom: 1px solid #e6e6e6;
+    }
+    
+    .panel-content {
+      padding: 15px;
+    }
+    
+    .design-mode .kr-grid-item {
+      border: 1px dashed #1E9FFF !important;
+      cursor: move;
+    }
+    
+    .design-mode .kr-grid-item:hover {
+      background-color: rgba(30, 159, 255, 0.05);
+    }
+    
+    .design-mode .kr-grid-item.selected {
+      border: 2px solid #5FB878 !important;
+    }
+    
+    .kr-grid-item-handle {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: #1E9FFF;
+      color: #fff;
+      padding: 2px 5px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 10;
+    }
+    
+    .design-mode .kr-grid-item-handle {
+      display: block;
+    }
+    
+    .grid-stack-item-removing {
+      opacity: 0.5;
+    }
+    
+    .component-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .component-item {
+      padding: 10px;
+      border: 1px solid #e6e6e6;
+      margin-bottom: 10px;
+      cursor: move;
+      border-radius: 2px;
+    }
+    
+    .component-item:hover {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <div class="designer-container">
+    <!-- 侧边栏 -->
+    <div class="designer-sidebar">
+      <!-- 布局信息 -->
+      <div class="panel">
+        <div class="panel-title">布局信息</div>
+        <div class="panel-content">
+          <form class="layui-form" lay-filter="layout-form">
+            <div class="layui-form-item">
+              <label class="layui-form-label">标题</label>
+              <div class="layui-input-block">
+                <input type="text" name="title" value="<%= layout_config['title'] %>" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">网格列数</label>
+              <div class="layui-input-block">
+                <input type="number" name="grid" value="<%= layout_config['columns'] || 12 %>" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">单元格高度</label>
+              <div class="layui-input-block">
+                <input type="number" name="cell_height" value="<%= layout_config['cellHeight'] || 60 %>" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">边距</label>
+              <div class="layui-input-block">
+                <input type="number" name="margin" value="<%= layout_config['margin'] || 10 %>" class="layui-input">
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 组件列表 -->
+      <div class="panel">
+        <div class="panel-title">组件列表</div>
+        <div class="panel-content">
+          <ul class="component-list">
+            <li class="component-item" data-type="section">
+              <i class="layui-icon layui-icon-template-1"></i> 区域标题
+            </li>
+            <li class="component-item" data-type="form_row">
+              <i class="layui-icon layui-icon-form"></i> 表单行
+            </li>
+            <li class="component-item" data-type="toolbar">
+              <i class="layui-icon layui-icon-set"></i> 工具栏
+            </li>
+            <li class="component-item" data-type="tabs">
+              <i class="layui-icon layui-icon-tabs"></i> 选项卡
+            </li>
+            <li class="component-item" data-type="attachment_list">
+              <i class="layui-icon layui-icon-upload"></i> 附件列表
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 属性编辑器 -->
+      <div class="panel">
+        <div class="panel-title">属性编辑器</div>
+        <div class="panel-content">
+          <form class="layui-form" lay-filter="property-form">
+            <div class="layui-form-item">
+              <label class="layui-form-label">ID</label>
+              <div class="layui-input-block">
+                <input type="text" name="id" class="layui-input" disabled>
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">X坐标</label>
+              <div class="layui-input-block">
+                <input type="number" name="x" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">Y坐标</label>
+              <div class="layui-input-block">
+                <input type="number" name="y" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">宽度</label>
+              <div class="layui-input-block">
+                <input type="number" name="w" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">高度</label>
+              <div class="layui-input-block">
+                <input type="number" name="h" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">分区</label>
+              <div class="layui-input-block">
+                <input type="text" name="section" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="update-property-btn">更新属性</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="designer-main">
+      <!-- 顶部工具栏 -->
+      <div class="designer-header">
+        <div class="designer-title"><%= title %></div>
+        <div class="designer-actions">
+          <button class="layui-btn layui-btn-sm" id="toggle-design-mode-btn">
+            <i class="layui-icon layui-icon-edit"></i> 切换设计模式
+          </button>
+          <button class="layui-btn layui-btn-sm layui-btn-normal" id="save-layout-btn">
+            <i class="layui-icon layui-icon-release"></i> 保存布局
+          </button>
+          <button class="layui-btn layui-btn-sm layui-btn-primary" id="preview-btn">
+            <i class="layui-icon layui-icon-search"></i> 预览
+          </button>
+          <a href="/separated/" class="layui-btn layui-btn-sm layui-btn-primary">
+            <i class="layui-icon layui-icon-return"></i> 返回
+          </a>
+        </div>
+      </div>
+      
+      <!-- 设计区域 -->
+      <div class="designer-content">
+        <div class="layui-form" lay-filter="project-form">
+          <%= html %>
+        </div>
+      </div>
+      
+      <!-- 底部状态栏 -->
+      <div class="designer-footer">
+        <div class="designer-status">
+          布局文件: <%= layout_file %> | 内容文件: <%= content_file %>
+        </div>
+        <div class="designer-info">
+          设计模式: <span id="design-mode-status">关闭</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://www.layuicdn.com/layui-v2.5.6/layui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@4.2.5/dist/gridstack.all.js"></script>
+  <script>
+    <%= js %>
+    
+    // 设计器JS
+    layui.use(['jquery', 'form', 'layer'], function(){
+      var $ = layui.jquery;
+      var form = layui.form;
+      var layer = layui.layer;
+      
+      // 布局配置
+      var layoutConfig = <%= layout_config %>;
+      
+      // 内容映射
+      var contentMap = <%= content_map %>;
+      
+      // 设计模式状态
+      var designMode = false;
+      
+      // 当前选中的网格项
+      var selectedItem = null;
+      
+      // 初始化网格项
+      function initGridItems() {
+        const gridLayout = document.querySelector('.kr-grid-layout');
+        if (!gridLayout) return;
+        
+        const config = JSON.parse(gridLayout.getAttribute('data-grid-config') || '{}');
+        
+        const items = gridLayout.querySelectorAll('.kr-grid-item');
+        const cellWidth = gridLayout.offsetWidth / (config.columns || 12);
+        const cellHeight = config.cellHeight || 60;
+        
+        // 计算最大Y坐标和高度，用于设置布局容器高度
+        let maxY = 0;
+        let maxHeight = 0;
+        
+        items.forEach(item => {
+          const x = parseInt(item.getAttribute('data-gs-x')) || 0;
+          const y = parseInt(item.getAttribute('data-gs-y')) || 0;
+          const w = parseInt(item.getAttribute('data-gs-w')) || 1;
+          const h = parseInt(item.getAttribute('data-gs-h')) || 1;
+          
+          // 更新最大Y坐标和高度
+          const itemBottom = y + h;
+          if (itemBottom > maxY) {
+            maxY = itemBottom;
+          }
+          
+          item.style.left = (x * cellWidth) + 'px';
+          item.style.top = (y * cellHeight) + 'px';
+          item.style.width = (w * cellWidth) + 'px';
+          item.style.minHeight = (h * cellHeight) + 'px';
+          // 移除固定高度，使用最小高度代替
+          
+          // 添加操作按钮
+          if (!item.querySelector('.kr-grid-item-handle')) {
+            var handle = document.createElement('div');
+            handle.className = 'kr-grid-item-handle';
+            handle.innerHTML = '<i class="layui-icon layui-icon-edit"></i>';
+            handle.setAttribute('data-id', item.getAttribute('data-gs-id'));
+            item.appendChild(handle);
+          }
+        });
+        
+        // 设置布局容器的最小高度，确保能容纳所有网格项
+        gridLayout.style.minHeight = ((maxY + 1) * cellHeight) + 'px';
+      }
+      
+      // 切换设计模式
+      function toggleDesignMode() {
+        designMode = !designMode;
+        
+        const gridLayout = document.querySelector('.kr-grid-layout');
+        if (!gridLayout) return;
+        
+        const items = gridLayout.querySelectorAll('.kr-grid-item');
+        items.forEach(item => {
+          if (designMode) {
+            item.classList.add('design-mode');
+          } else {
+            item.classList.remove('design-mode');
+            item.classList.remove('selected');
+          }
+        });
+        
+        // 更新网格布局状态
+        gridLayout.setAttribute('data-design-mode', designMode ? 'true' : 'false');
+        
+        // 更新状态显示
+        $('#design-mode-status').text(designMode ? '开启' : '关闭');
+        
+        // 清除选中状态
+        selectedItem = null;
+        resetPropertyForm();
+      }
+      
+      // 选择网格项
+      function selectGridItem(item) {
+        // 清除其他项的选中状态
+        const gridLayout = document.querySelector('.kr-grid-layout');
+        if (!gridLayout) return;
+        
+        const items = gridLayout.querySelectorAll('.kr-grid-item');
+        items.forEach(i => {
+          i.classList.remove('selected');
+        });
+        
+        // 设置当前项的选中状态
+        item.classList.add('selected');
+        selectedItem = item;
+        
+        // 更新属性表单
+        updatePropertyForm(item);
+      }
+      
+      // 更新属性表单
+      function updatePropertyForm(item) {
+        if (!item) return;
+        
+        const id = item.getAttribute('data-gs-id');
+        const x = parseInt(item.getAttribute('data-gs-x')) || 0;
+        const y = parseInt(item.getAttribute('data-gs-y')) || 0;
+        const w = parseInt(item.getAttribute('data-gs-w')) || 1;
+        const h = parseInt(item.getAttribute('data-gs-h')) || 1;
+        
+        // 查找该项在布局配置中的分区
+        let section = '';
+        if (layoutConfig.sections) {
+          for (const sec of layoutConfig.sections) {
+            if (sec.items) {
+              for (const it of sec.items) {
+                if (it.id === id) {
+                  section = sec.name;
+                  break;
+                }
+              }
+              if (section) break;
+            }
+          }
+        }
+        
+        // 更新表单值
+        form.val('property-form', {
+          id: id,
+          x: x,
+          y: y,
+          w: w,
+          h: h,
+          section: section
+        });
+      }
+      
+      // 重置属性表单
+      function resetPropertyForm() {
+        form.val('property-form', {
+          id: '',
+          x: '',
+          y: '',
+          w: '',
+          h: '',
+          section: ''
+        });
+      }
+      
+      // 更新网格项属性
+      function updateGridItemProperty() {
+        if (!selectedItem) {
+          layer.msg('请先选择一个网格项');
+          return;
+        }
+        
+        // 获取表单值
+        const data = form.val('property-form');
+        
+        // 更新网格项属性
+        selectedItem.setAttribute('data-gs-x', data.x);
+        selectedItem.setAttribute('data-gs-y', data.y);
+        selectedItem.setAttribute('data-gs-w', data.w);
+        selectedItem.setAttribute('data-gs-h', data.h);
+        
+        // 重新初始化网格项
+        initGridItems();
+        
+        // 更新布局配置
+        updateLayoutConfig();
+        
+        layer.msg('属性已更新');
+      }
+      
+      // 更新布局配置
+      function updateLayoutConfig() {
+        // 获取布局表单值
+        const layoutData = form.val('layout-form');
+        
+        // 更新布局配置
+        layoutConfig.title = layoutData.title;
+        layoutConfig.grid = parseInt(layoutData.grid);
+        layoutConfig.cell_height = parseInt(layoutData.cell_height);
+        layoutConfig.margin = parseInt(layoutData.margin);
+        
+        // 更新网格项配置
+        const gridLayout = document.querySelector('.kr-grid-layout');
+        if (!gridLayout) return;
+        
+        const items = gridLayout.querySelectorAll('.kr-grid-item');
+        
+        // 按分区分组
+        const sectionMap = {};
+        
+        items.forEach(item => {
+          const id = item.getAttribute('data-gs-id');
+          const x = parseInt(item.getAttribute('data-gs-x')) || 0;
+          const y = parseInt(item.getAttribute('data-gs-y')) || 0;
+          const w = parseInt(item.getAttribute('data-gs-w')) || 1;
+          const h = parseInt(item.getAttribute('data-gs-h')) || 1;
+          
+          // 查找该项在布局配置中的分区
+          let section = '';
+          if (layoutConfig.sections) {
+            for (const sec of layoutConfig.sections) {
+              if (sec.items) {
+                for (const it of sec.items) {
+                  if (it.id === id) {
+                    section = sec.name;
+                    break;
+                  }
+                }
+                if (section) break;
+              }
+            }
+          }
+          
+          // 如果当前项被选中，则使用表单中的分区值
+          if (item === selectedItem) {
+            section = form.val('property-form').section;
+          }
+          
+          // 按分区分组
+          if (!sectionMap[section]) {
+            sectionMap[section] = [];
+          }
+          
+          sectionMap[section].push({
+            id: id,
+            x: x,
+            y: y,
+            w: w,
+            h: h
+          });
+        });
+        
+        // 重建分区配置
+        layoutConfig.sections = [];
+        
+        for (const section in sectionMap) {
+          if (section) {
+            layoutConfig.sections.push({
+              name: section,
+              items: sectionMap[section]
+            });
+          }
+        }
+      }
+      
+      // 保存布局配置
+      function saveLayoutConfig() {
+        // 更新布局配置
+        updateLayoutConfig();
+        
+        // 发送到服务器
+        layer.msg('布局配置已保存（模拟）');
+        console.log('保存的布局配置:', layoutConfig);
+      }
+      
+      // 预览
+      function preview() {
+        // 更新布局配置
+        updateLayoutConfig();
+        
+        // 打开预览窗口
+        layer.open({
+          type: 1,
+          title: '预览 - ' + layoutConfig.title,
+          area: ['80%', '80%'],
+          content: '<div class="layui-padding" style="padding: 20px;">布局预览功能开发中...</div>'
+        });
+      }
+      
+      // 初始化
+      initGridItems();
+      
+      // 绑定事件
+      
+      // 切换设计模式
+      $('#toggle-design-mode-btn').on('click', function(){
+        toggleDesignMode();
+      });
+      
+      // 保存布局
+      $('#save-layout-btn').on('click', function(){
+        saveLayoutConfig();
+      });
+      
+      // 预览
+      $('#preview-btn').on('click', function(){
+        preview();
+      });
+      
+      // 更新属性
+      $('#update-property-btn').on('click', function(){
+        updateGridItemProperty();
+      });
+      
+      // 网格项点击事件
+      $(document).on('click', '.kr-grid-item', function(e){
+        if (!designMode) return;
+        
+        // 阻止事件冒泡
+        e.stopPropagation();
+        
+        // 选中网格项
+        selectGridItem(this);
+      });
+      
+      // 网格项操作按钮点击事件
+      $(document).on('click', '.kr-grid-item-handle', function(e){
+        if (!designMode) return;
+        
+        // 阻止事件冒泡
+        e.stopPropagation();
+        
+        // 获取网格项ID
+        const id = $(this).data('id');
+        
+        // 查找网格项
+        const item = document.querySelector(`.kr-grid-item[data-gs-id="${id}"]`);
+        if (item) {
+          // 选中网格项
+          selectGridItem(item);
+        }
+      });
+      
+      // 点击空白区域取消选中
+      $(document).on('click', function(e){
+        if (!designMode) return;
+        
+        // 检查点击的元素是否在网格项内
+        const gridItem = $(e.target).closest('.kr-grid-item');
+        if (gridItem.length === 0) {
+          // 清除选中状态
+          $('.kr-grid-item').removeClass('selected');
+          selectedItem = null;
+          resetPropertyForm();
+        }
+      });
+      
+      // 窗口大小变化时重新计算位置
+      $(window).on('resize', function(){
+        initGridItems();
+      });
+    });
+  </script>
+</body>
+</html>

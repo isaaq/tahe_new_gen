@@ -1,0 +1,90 @@
+# 产品管理页面 - 网格布局版本
+# 基于GridStack.js思想，布局与内容完全分离
+
+title "产品管理系统"
+description "展示基于网格的产品管理界面"
+grid 12
+cell_height 60
+margin 10
+static_grid false
+disable_drag false
+disable_resize false
+animate true
+
+# 顶部区域
+section "顶部区域"
+
+item id="page_header" x=0 y=0 w=12 h=1 {
+  <kr:header title="产品管理系统" subtitle="基于网格布局的产品管理界面" />
+}
+
+# 左侧区域 - 产品分类树
+section "左侧区域"
+
+item id="category_tree" x=0 y=1 w=3 h=10 {
+  <kr:section title="产品分类">
+    <kr:tree source="/api/categories" id="categoryTree" />
+  </kr:section>
+}
+
+# 右侧区域 - 产品列表
+section "右侧区域"
+
+item id="search_form" x=3 y=1 w=9 h=2 {
+  <kr:section title="搜索条件">
+    <kr:search_form action="/api/products/search">
+      <kr:form_field type="input" name="keyword" label="关键词" placeholder="请输入产品名称" />
+      <kr:form_field type="select" name="category" label="分类" options='[
+        {"value": "electronics", "text": "电子产品"},
+        {"value": "clothing", "text": "服装"},
+        {"value": "books", "text": "图书"}
+      ]' />
+      <kr:form_field type="date_range" name="date_range" label="创建时间" placeholder="请选择时间范围" />
+      <kr:form_buttons>
+        <kr:button type="submit" text="搜索" theme="primary" />
+        <kr:button type="reset" text="重置" />
+      </kr:form_buttons>
+    </kr:search_form>
+  </kr:section>
+}
+
+item id="product_table" x=3 y=3 w=9 h=8 {
+  <kr:section title="产品列表">
+    <kr:table source="/api/products" id="productTable">
+      <kr:table_column type="checkbox" fixed="left" />
+      <kr:table_column field="id" title="ID" width="80" sort="true" />
+      <kr:table_column field="name" title="产品名称" width="200" edit="text" />
+      <kr:table_column field="price" title="价格" width="120" edit="text" />
+      <kr:table_column field="category" title="分类" width="120" />
+      <kr:table_column field="status" title="状态" width="100" />
+      <kr:table_column fixed="right" title="操作" width="150" toolbar="#rowTools" />
+    </kr:table>
+    <kr:table_tools>
+      <kr:button id="addProduct" text="添加产品" icon="add" theme="primary" />
+      <kr:button id="batchDelete" text="批量删除" icon="delete" theme="danger" />
+    </kr:table_tools>
+  </kr:section>
+}
+
+# 底部区域 - 表单弹窗
+section "弹窗区域"
+
+item id="product_form" x=0 y=0 w=0 h=0 auto_position="true" {
+  <kr:dialog id="productForm" title="产品信息" width="500px">
+    <kr:form action="/api/products/save" id="productFormContent">
+      <kr:form_field type="input" name="name" label="产品名称" required="true" placeholder="请输入产品名称" />
+      <kr:form_field type="textarea" name="description" label="产品描述" placeholder="请输入产品描述" />
+      <kr:form_field type="select" name="category" label="产品分类" required="true" options='[
+        {"value": "electronics", "text": "电子产品"},
+        {"value": "clothing", "text": "服装"},
+        {"value": "books", "text": "图书"}
+      ]' />
+      <kr:form_field type="number_range" name="price_range" label="价格区间" />
+      <kr:form_field type="input" name="stock" label="库存数量" input_type="number" required="true" />
+      <kr:form_buttons>
+        <kr:button type="submit" text="保存" theme="primary" />
+        <kr:button type="button" text="取消" onclick="closeProductForm()" />
+      </kr:form_buttons>
+    </kr:form>
+  </kr:dialog>
+}

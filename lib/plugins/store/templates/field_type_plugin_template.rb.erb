@@ -1,0 +1,45 @@
+# frozen_string_literal: true
+
+require_relative '<%= @base_require_path %>'
+
+module Plugins
+  module FieldType
+    module <%= @category_module %>
+      class <%= @class_name %> < ::Plugins::FieldType::BaseFieldType
+        field_type_for '<%= @field_type_name %>'
+        
+        def initialize(name, options = {})
+          super(name, :<%= @field_type_name %>, options)
+        end
+        
+        def validate(value)
+          # 必填验证
+          if required? && (value.nil? || value.to_s.empty?)
+            return [false, "#{@name} 不能为空"]
+          end
+          
+          # 类型特定验证
+          <%= @validation_logic %>
+          
+          [true, nil]
+        end
+        
+        def to_mongo(value)
+          # 转换为MongoDB存储格式
+          <%= @mongo_conversion_logic %>
+        end
+        
+        def from_mongo(value)
+          # 从MongoDB格式转换
+          <%= @mongo_from_logic %>
+        end
+        
+        def to_ui(value)
+          # 转换为UI显示格式
+          <%= @ui_conversion_logic %>
+        end
+      end
+    end
+  end
+end
+

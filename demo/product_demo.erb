@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>产品管理示例 - KR Framework</title>
+  <link rel="stylesheet" href="/layui/css/layui.css">
+  <style>
+    .demo-container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .demo-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e6e6e6;
+      border-radius: 4px;
+    }
+    .demo-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .kr-field-error {
+      color: #FF5722;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .number-range-container {
+      position: relative;
+    }
+    .number-range-separator {
+      display: inline-block;
+      width: 10%;
+      text-align: center;
+      line-height: 38px;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>KR Framework - 产品管理示例</h1>
+    <p>这是一个完整的 kr->layui->html + runtime 流程演示</p>
+    
+    <!-- 表单示例 -->
+    <div class="demo-section">
+      <div class="demo-title">1. 表单示例 (使用 KR 标签)</div>
+      
+      <!-- 这里使用 KR 标签，会被转换为 layui 标签 -->
+      <kr:form model="Product" action="/api/products/save" id="product_form">
+        <kr:input name="name" label="产品名称" required="true" placeholder="请输入产品名称" />
+        
+        <kr:number_range_input 
+          name="price_range" 
+          label="价格区间" 
+          min="0" 
+          max="10000" 
+          min_value="" 
+          max_value="" />
+        
+        <kr:select name="category" label="产品分类">
+          <option value="electronics">电子产品</option>
+          <option value="clothing">服装</option>
+          <option value="books">图书</option>
+        </kr:select>
+        
+        <div class="layui-form-item">
+          <div class="layui-input-block">
+            <button class="layui-btn" type="submit">保存产品</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+          </div>
+        </div>
+      </kr:form>
+    </div>
+    
+    <!-- 手动 HTML 示例（对比用） -->
+    <div class="demo-section">
+      <div class="demo-title">2. 手动 HTML 示例（对比用）</div>
+      
+      <form class="layui-form" id="manual_form" data-api="/api/products/save">
+        <div class="layui-form-item">
+          <label class="layui-form-label">产品名称</label>
+          <div class="layui-input-block">
+            <input type="text" name="name" required lay-verify="required" placeholder="请输入产品名称" class="layui-input">
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <label class="layui-form-label">价格区间</label>
+          <div class="layui-input-block number-range-container" id="manual_price_range">
+            <input type="number" class="layui-input number-range-min" name="price_range_min" 
+                   placeholder="最小值" style="width:45%;display:inline-block;">
+            <span class="number-range-separator">至</span>
+            <input type="number" class="layui-input number-range-max" name="price_range_max" 
+                   placeholder="最大值" style="width:45%;display:inline-block;">
+            <input type="hidden" name="price_range" id="price_range_hidden">
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <label class="layui-form-label">产品分类</label>
+          <div class="layui-input-block">
+            <select name="category" lay-verify="required">
+              <option value="">请选择分类</option>
+              <option value="electronics">电子产品</option>
+              <option value="clothing">服装</option>
+              <option value="books">图书</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <div class="layui-input-block">
+            <button class="layui-btn" type="submit">保存产品</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <!-- 数据表格示例 -->
+    <div class="demo-section">
+      <div class="demo-title">3. 数据表格示例</div>
+      
+      <table class="layui-table" id="product_table" lay-filter="product_table">
+        <thead>
+          <tr>
+            <th lay-data="{type:'checkbox', fixed: 'left'}"></th>
+            <th lay-data="{field:'id', width:80, sort: true}">ID</th>
+            <th lay-data="{field:'name', width:200}">产品名称</th>
+            <th lay-data="{field:'price_range', width:150}">价格区间</th>
+            <th lay-data="{field:'category', width:120}">分类</th>
+            <th lay-data="{field:'created_at', width:180}">创建时间</th>
+            <th lay-data="{fixed: 'right', width:150, align:'center', toolbar: '#barDemo'}">操作</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    
+    <!-- 结果显示区域 -->
+    <div class="demo-section">
+      <div class="demo-title">4. 操作结果</div>
+      <div id="result" style="background: #f5f5f5; padding: 15px; border-radius: 4px; min-height: 100px;">
+        等待操作...
+      </div>
+    </div>
+  </div>
+  
+  <!-- 表格操作按钮模板 -->
+  <script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+  </script>
+  
+  <!-- 引入 layui 和 KR runtime -->
+  <script src="/layui/layui.js"></script>
+  <script src="/assets/kr-runtime.js"></script>
+  
+  <script>
+    layui.use(['form', 'table', 'layer'], function(){
+      var form = layui.form;
+      var table = layui.table;
+      var layer = layui.layer;
+      var $ = layui.jquery;
+      
+      // 初始化数据表格
+      table.render({
+        elem: '#product_table',
+        url: '/api/products/list',
+        page: true,
+        cols: [[
+          {type: 'checkbox', fixed: 'left'},
+          {field: 'id', title: 'ID', width: 80, sort: true},
+          {field: 'name', title: '产品名称', width: 200},
+          {field: 'price_range', title: '价格区间', width: 150, templet: function(d){
+            if (d.price_range) {
+              try {
+                var range = JSON.parse(d.price_range);
+                return range[0] + ' - ' + range[1];
+              } catch(e) {
+                return d.price_range;
+              }
+            }
+            return '-';
+          }},
+          {field: 'category', title: '分类', width: 120},
+          {field: 'created_at', title: '创建时间', width: 180},
+          {fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#barDemo'}
+        ]]
+      });
+      
+      // 表格工具栏事件
+      table.on('tool(product_table)', function(obj){
+        var data = obj.data;
+        if(obj.event === 'del'){
+          layer.confirm('确认删除？', function(index){
+            // 删除逻辑
+            $.post('/api/products/delete', {id: data.id}, function(res){
+              if(res.success) {
+                obj.del();
+                layer.close(index);
+                layer.msg('删除成功');
+              } else {
+                layer.msg('删除失败');
+              }
+            });
+          });
+        } else if(obj.event === 'edit'){
+          // 编辑逻辑
+          layer.msg('编辑功能待实现');
+        }
+      });
+      
+      // 使用 KR Runtime 绑定表单
+      if (typeof KR !== 'undefined') {
+        // 绑定 KR 表单
+        KR.bindForm('#product_form', {
+          onSuccess: function(response) {
+            $('#result').html('KR 表单提交成功: ' + JSON.stringify(response, null, 2));
+            table.reload('product_table'); // 重新加载表格
+          },
+          onError: function(error) {
+            $('#result').html('KR 表单提交失败: ' + error.message);
+          }
+        });
+        
+        // 绑定手动表单
+        KR.bindForm('#manual_form', {
+          onSuccess: function(response) {
+            $('#result').html('手动表单提交成功: ' + JSON.stringify(response, null, 2));
+            table.reload('product_table'); // 重新加载表格
+          },
+          onError: function(error) {
+            $('#result').html('手动表单提交失败: ' + error.message);
+          }
+        });
+        
+        // 绑定数值范围控件
+        KR.bindNumberRange('manual_price_range', 'price_range', {
+          min: 0,
+          max: 10000,
+          onChange: function(value) {
+            console.log('价格区间变更:', value);
+            $('#result').html('价格区间变更: ' + JSON.stringify(value));
+          }
+        });
+      }
+      
+      // 表单提交事件（备用方案）
+      form.on('submit(*)', function(data){
+        console.log('表单数据:', data.field);
+        $('#result').html('表单数据: ' + JSON.stringify(data.field, null, 2));
+        return false; // 阻止表单跳转
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# frozen_string_literal: true
+
+# UI组件插件：<%= @name %>
+# 分类：<%= @category %>
+# 插件ID：<%= @plugin_id %>
+
+module Plugins
+  module Other
+    module UiComponent
+      class <%= @class_name %>
+        # 渲染入口：返回HTML片段或组件描述（JSON）
+        # context:
+        # - props: 组件属性
+        # - data: 绑定数据
+        # - options: 运行时配置
+        def render(context = {})
+          props = context[:props] || {}
+          data = context[:data] || {}
+          options = context[:options] || {}
+
+          <%= @render_logic %>
+        end
+      end
+    end
+  end
+end
+
+

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kr:contents xmlns:kr="http://kr.tahe.org/schema">
+  <!-- 顶部工具栏 -->
+  <kr:toolbar layout="toolbar">
+    <kr:button text="保存" icon="save" theme="primary" />
+    <kr:button text="保存并提交" icon="submit" theme="primary" />
+    <kr:button text="显示数据" icon="data" />
+    <kr:button text="基础数据" icon="database" />
+    <kr:button text="加签" icon="sign" />
+    <kr:button text="退回重填" icon="return" />
+    <kr:button text="导入" icon="import" />
+  </kr:toolbar>
+
+  <!-- 标题区域 -->
+  <kr:page_title layout="page_title" title="立项信息登记" />
+
+  <!-- 选项卡区域 -->
+  <kr:tabs layout="tabs">
+    <kr:tab title="基本信息" active="true" />
+    <kr:tab title="详细施工信息" />
+    <kr:tab title="材料设备清单" />
+  </kr:tabs>
+
+  <!-- 基本信息区域 -->
+  <kr:section layout="basic_info" title="基本信息" />
+
+  <kr:form_row layout="form_row1">
+    <kr:form_field name="date" label="日期" type="date" value="2025-07-18" width="33%" />
+    <kr:form_field name="project_related_doc" label="关联中标信息登记单" type="select" width="33%" />
+    <kr:form_field name="project_number" label="项目编号" type="text" placeholder="保存后自动生成" width="33%" />
+  </kr:form_row>
+
+  <kr:form_row layout="form_row2">
+    <kr:form_field name="plan_start_date" label="计划开始日期" type="date" required="true" width="33%" />
+    <kr:form_field name="plan_end_date" label="计划结束日期" type="date" required="true" width="33%" />
+    <kr:form_field name="project_location" label="所属区域" type="text" width="33%" />
+  </kr:form_row>
+
+  <kr:form_row layout="form_row3">
+    <kr:form_field name="project_name" label="工程名称" type="text" required="true" width="33%" />
+    <kr:form_field name="project_content" label="工程施工内容" type="text" required="true" width="33%" />
+    <kr:form_field name="project_price" label="工程报价" type="number" required="true" width="33%" />
+  </kr:form_row>
+
+  <!-- 项目信息区域 -->
+  <kr:section layout="project_info" title="项目信息" />
+
+  <kr:form_row layout="form_row4">
+    <kr:form_field name="construction_unit" label="造价(大写)" type="text" width="33%" />
+    <kr:form_field name="project_type" label="项目类型" type="select" width="33%">
+      <kr:option value="" text="请选择" />
+    </kr:form_field>
+    <kr:form_field name="quality_level" label="质量等级" type="select" width="33%">
+      <kr:option value="" text="请选择" />
+    </kr:form_field>
+  </kr:form_row>
+
+  <kr:form_row layout="form_row5">
+    <kr:form_field name="project_status" label="项目状态" type="select" width="33%">
+      <kr:option value="" text="请选择" />
+    </kr:form_field>
+    <kr:form_field name="business_type" label="业务类型" type="select" width="33%">
+      <kr:option value="" text="请选择" />
+    </kr:form_field>
+    <kr:form_field name="project_manager" label="项目负责人" type="select" width="33%">
+      <kr:option value="" text="请选择" />
+    </kr:form_field>
+  </kr:form_row>
+
+  <!-- 甲方信息区域 -->
+  <kr:section layout="client_info_title" title="甲方信息" />
+
+  <kr:form_row layout="client_info_form">
+    <kr:form_field name="client_method" label="甲方方式" type="text" width="33%" />
+    <kr:form_field name="client_person" label="联系人" type="text" width="33%" />
+    <kr:form_field name="client_contact" label="联系方式" type="text" width="33%" />
+  </kr:form_row>
+
+  <kr:form_row layout="client_info_form2">
+    <kr:form_field name="client_department" label="部门" type="text" width="33%" />
+    <kr:form_field name="client_position" label="总经办" type="text" width="33%" />
+    <kr:form_field name="client_company" label="所属公司" type="text" value="定西工程建设有限公司" width="33%" />
+  </kr:form_row>
+
+  <!-- 立项人基本资料区域 -->
+  <kr:section layout="applicant_info_title" title="立项人基本资料" />
+
+  <kr:form_row layout="applicant_info_form">
+    <kr:form_field name="applicant_name" label="立项人" type="text" width="33%" />
+    <kr:form_field name="applicant_department" label="部门" type="text" width="33%" />
+    <kr:form_field name="applicant_position" label="总经办" type="text" width="33%" />
+  </kr:form_row>
+
+  <kr:form_row layout="applicant_info_form2">
+    <kr:form_field name="applicant_phone" label="联系电话" type="text" width="33%" />
+    <kr:form_field name="applicant_company" label="所属公司" type="text" width="33%" />
+  </kr:form_row>
+
+  <!-- 备注区域 -->
+  <kr:section layout="remarks" title="备注" />
+
+  <kr:form_row layout="remarks_content">
+    <kr:form_field name="remarks" label="" type="textarea" placeholder="请输入项目相关补充说明..." width="100%" />
+  </kr:form_row>
+
+  <!-- 附件区域 -->
+  <kr:section layout="attachments" title="附件" />
+
+  <kr:attachment_list layout="attachment_list" />
+</kr:contents>

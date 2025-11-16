@@ -1,0 +1,151 @@
+{
+  "page": {
+    "title": "产品管理示例",
+    "layout": "default",
+    "scripts": ["/assets/kr-runtime.js"],
+    "styles": ["/layui/css/layui.css"]
+  },
+  "forms": {
+    "product_form": {
+      "model": "Product",
+      "action": "/api/products/save",
+      "method": "POST",
+      "layout": "horizontal",
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "label": "产品名称",
+          "required": true,
+          "placeholder": "请输入产品名称"
+        },
+        {
+          "name": "price_range",
+          "type": "number_range",
+          "label": "价格区间",
+          "min": 0,
+          "max": 10000,
+          "placeholder": {
+            "min": "最低价格",
+            "max": "最高价格"
+          }
+        },
+        {
+          "name": "category",
+          "type": "select",
+          "label": "产品分类",
+          "options": [
+            {"value": "electronics", "text": "电子产品"},
+            {"value": "clothing", "text": "服装"},
+            {"value": "books", "text": "图书"}
+          ]
+        }
+      ],
+      "validation": {
+        "name": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 50,
+          "message": "产品名称长度必须在2-50个字符之间"
+        },
+        "price_range": {
+          "required": true,
+          "custom": "validatePriceRange",
+          "message": "请输入有效的价格区间"
+        }
+      },
+      "submit_options": {
+        "loading": true,
+        "success_message": "产品保存成功",
+        "error_message": "产品保存失败"
+      }
+    }
+  },
+  "tables": {
+    "product_table": {
+      "source": "/api/products/list",
+      "columns": [
+        {
+          "field": "id",
+          "title": "ID",
+          "width": 80,
+          "sort": true
+        },
+        {
+          "field": "name",
+          "title": "产品名称",
+          "width": 200
+        },
+        {
+          "field": "price_range",
+          "title": "价格区间",
+          "width": 150,
+          "formatter": "formatPriceRange"
+        },
+        {
+          "field": "category",
+          "title": "分类",
+          "width": 120
+        },
+        {
+          "field": "created_at",
+          "title": "创建时间",
+          "width": 180,
+          "formatter": "formatDateTime"
+        }
+      ],
+      "pagination": true,
+      "row_actions": [
+        {
+          "name": "edit",
+          "label": "编辑",
+          "icon": "layui-icon-edit"
+        },
+        {
+          "name": "delete",
+          "label": "删除",
+          "icon": "layui-icon-delete",
+          "confirm": "确认删除此产品？"
+        }
+      ],
+      "checkbox": true,
+      "search": true,
+      "export": true
+    }
+  },
+  "fields": {
+    "name": {
+      "type": "text",
+      "label": "产品名称",
+      "required": true,
+      "validation": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      }
+    },
+    "price_range": {
+      "type": "number_range",
+      "label": "价格区间",
+      "min": 0,
+      "max": 10000,
+      "precision": 2,
+      "validation": {
+        "required": true,
+        "custom": "validatePriceRange"
+      }
+    },
+    "category": {
+      "type": "select",
+      "label": "产品分类",
+      "options": [
+        {"value": "electronics", "text": "电子产品"},
+        {"value": "clothing", "text": "服装"},
+        {"value": "books", "text": "图书"}
+      ],
+      "validation": {
+        "required": true
+      }
+    }
+  }
+}

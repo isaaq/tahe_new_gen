@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI页面生成器</title>
+  <link href="//unpkg.com/layui@2.12.1/dist/css/layui.css" rel="stylesheet">
+  <style>
+    .generator-container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .generator-header {
+      margin-bottom: 20px;
+    }
+    .generator-tabs {
+      margin-top: 20px;
+    }
+    .result-preview {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 15px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .result-preview pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .action-buttons {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="generator-container">
+    <div class="generator-header">
+      <h1>AI页面生成器</h1>
+      <p>通过自然语言描述自动生成kr标签页面</p>
+    </div>
+
+    <div class="layui-tab layui-tab-brief generator-tabs">
+      <ul class="layui-tab-title">
+        <li class="layui-this">直接生成</li>
+        <li>从Schema生成</li>
+        <li>两步生成</li>
+        <li>已生成列表</li>
+      </ul>
+      
+      <!-- 标签页1：直接生成 -->
+      <div class="layui-tab-item layui-show">
+        <div class="layui-card">
+          <div class="layui-card-header">自然语言 → kr标签（直接生成）</div>
+          <div class="layui-card-body">
+            <form class="layui-form" id="direct-generate-form">
+              <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">需求描述</label>
+                <div class="layui-input-block">
+                  <textarea 
+                    name="requirement" 
+                    placeholder="例如：我要做一个商品管理页面，有商品表、店铺表、商家表、分类表，需要列表、详情、新增、修改、删除功能" 
+                    class="layui-textarea" 
+                    rows="5"
+                    required></textarea>
+                </div>
+              </div>
+              
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <input type="checkbox" name="save_to_file" title="保存到文件" lay-skin="primary" checked>
+                </div>
+              </div>
+              
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button type="submit" class="layui-btn" lay-submit lay-filter="direct-generate">生成kr标签</button>
+                  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+              </div>
+            </form>
+            
+            <div id="direct-result" class="result-preview" style="display: none;">
+              <h3>生成结果：</h3>
+              <pre id="direct-result-content"></pre>
+              <div class="action-buttons">
+                <button class="layui-btn layui-btn-sm" id="direct-copy-btn">复制代码</button>
+                <button class="layui-btn layui-btn-sm layui-btn-normal" id="direct-preview-btn">预览</button>
+                <a class="layui-btn layui-btn-sm layui-btn-primary" id="direct-download-btn" download>下载文件</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 标签页2：从Schema生成 -->
+      <div class="layui-tab-item">
+        <div class="layui-card">
+          <div class="layui-card-header">Schema → kr标签</div>
+          <div class="layui-card-body">
+            <form class="layui-form" id="schema-generate-form">
+              <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">Schema配置</label>
+                <div class="layui-input-block">
+                  <textarea 
+                    name="schema" 
+                    placeholder='{"type":"datamanage","data":"products","fields":["name","price","category"],"actions":["add","edit","delete","view"],"layout":"auto"}' 
+                    class="layui-textarea" 
+                    rows="10"
+                    required></textarea>
+                </div>
+              </div>
+              
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button type="submit" class="layui-btn" lay-submit lay-filter="schema-generate">生成kr标签</button>
+                  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+              </div>
+            </form>
+            
+            <div id="schema-result" class="result-preview" style="display: none;">
+              <h3>生成结果：</h3>
+              <pre id="schema-result-content"></pre>
+              <div class="action-buttons">
+                <button class="layui-btn layui-btn-sm" id="schema-copy-btn">复制代码</button>
+                <button class="layui-btn layui-btn-sm layui-btn-normal" id="schema-preview-btn">预览</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 标签页3：两步生成 -->
+      <div class="layui-tab-item">
+        <div class="layui-card">
+          <div class="layui-card-header">自然语言 → Schema → kr标签（两步生成）</div>
+          <div class="layui-card-body">
+            <form class="layui-form" id="two-step-generate-form">
+              <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">需求描述</label>
+                <div class="layui-input-block">
+                  <textarea 
+                    name="requirement" 
+                    placeholder="例如：商品管理页面..." 
+                    class="layui-textarea" 
+                    rows="5"
+                    required></textarea>
+                </div>
+              </div>
+              
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button type="submit" class="layui-btn" lay-submit lay-filter="two-step-generate">生成Schema和kr标签</button>
+                  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+              </div>
+            </form>
+            
+            <div id="two-step-result" class="result-preview" style="display: none;">
+              <h3>生成的Schema：</h3>
+              <pre id="two-step-schema-content"></pre>
+              <h3 style="margin-top: 20px;">生成的kr标签：</h3>
+              <pre id="two-step-kr-content"></pre>
+              <div class="action-buttons">
+                <button class="layui-btn layui-btn-sm" id="two-step-copy-btn">复制kr标签</button>
+                <button class="layui-btn layui-btn-sm layui-btn-normal" id="two-step-preview-btn">预览</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 标签页4：已生成列表 -->
+      <div class="layui-tab-item">
+        <div class="layui-card">
+          <div class="layui-card-header">已生成的页面</div>
+          <div class="layui-card-body">
+            <div class="layui-form-item">
+              <div class="layui-input-inline">
+                <select name="list-type" id="list-type-select">
+                  <option value="kr_tags">kr标签列表</option>
+                  <option value="schemas">Schema列表</option>
+                </select>
+              </div>
+              <button class="layui-btn layui-btn-sm" id="refresh-list-btn">刷新列表</button>
+            </div>
+            
+            <table class="layui-table" id="generated-list-table" lay-filter="generated-list">
+              <thead>
+                <tr>
+                  <th>名称</th>
+                  <th>类型</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="generated-list-tbody">
+                <tr>
+                  <td colspan="4" style="text-align: center;">点击"刷新列表"加载数据</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="//unpkg.com/layui@2.12.1/dist/layui.js"></script>
+  <script>
+    layui.use(['form', 'layer', 'table'], function(){
+      var form = layui.form;
+      var layer = layui.layer;
+      var table = layui.table;
+      
+      // 直接生成
+      form.on('submit(direct-generate)', function(data){
+        var loading = layer.load(2, {time: 10*1000});
+        
+        fetch('/api/generate-kr-tags', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          },
+          body: JSON.stringify({
+            requirement: data.field.requirement,
+            save_to_file: data.field.save_to_file === 'on'
+          })
+        })
+        .then(response => response.json())
+        .then(result => {
+          layer.close(loading);
+          if(result.status === 'success') {
+            document.getElementById('direct-result-content').textContent = result.kr_tags;
+            document.getElementById('direct-result').style.display = 'block';
+            document.getElementById('direct-download-btn').href = '/api/kr-tags/' + result.tag_id;
+            layer.msg('生成成功！', {icon: 1});
+          } else {
+            layer.msg('生成失败：' + result.error, {icon: 2});
+          }
+        })
+        .catch(error => {
+          layer.close(loading);
+          layer.msg('请求失败：' + error.message, {icon: 2});
+        });
+        
+        return false;
+      });
+      
+      // 从Schema生成
+      form.on('submit(schema-generate)', function(data){
+        var loading = layer.load(2, {time: 10*1000});
+        var schema;
+        
+        try {
+          schema = JSON.parse(data.field.schema);
+        } catch(e) {
+          layer.close(loading);
+          layer.msg('Schema格式错误，请检查JSON格式', {icon: 2});
+          return false;
+        }
+        
+        fetch('/api/schema-to-kr-tags', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          },
+          body: JSON.stringify({schema: schema})
+        })
+        .then(response => response.json())
+        .then(result => {
+          layer.close(loading);
+          if(result.status === 'success') {
+            document.getElementById('schema-result-content').textContent = result.kr_tags;
+            document.getElementById('schema-result').style.display = 'block';
+            layer.msg('生成成功！', {icon: 1});
+          } else {
+            layer.msg('生成失败：' + result.error, {icon: 2});
+          }
+        })
+        .catch(error => {
+          layer.close(loading);
+          layer.msg('请求失败：' + error.message, {icon: 2});
+        });
+        
+        return false;
+      });
+      
+      // 两步生成
+      form.on('submit(two-step-generate)', function(data){
+        var loading = layer.load(2, {time: 20*1000});
+        
+        fetch('/api/generate-schema-then-kr-tags', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          },
+          body: JSON.stringify({
+            requirement: data.field.requirement
+          })
+        })
+        .then(response => response.json())
+        .then(result => {
+          layer.close(loading);
+          if(result.status === 'success') {
+            document.getElementById('two-step-schema-content').textContent = JSON.stringify(result.schema, null, 2);
+            document.getElementById('two-step-kr-content').textContent = result.kr_tags;
+            document.getElementById('two-step-result').style.display = 'block';
+            layer.msg('生成成功！', {icon: 1});
+          } else {
+            layer.msg('生成失败：' + result.error, {icon: 2});
+          }
+        })
+        .catch(error => {
+          layer.close(loading);
+          layer.msg('请求失败：' + error.message, {icon: 2});
+        });
+        
+        return false;
+      });
+      
+      // 预览功能：将kr标签发送到预览API
+      function previewKrTags(krTags) {
+        if (!krTags || !krTags.trim()) {
+          layer.msg('没有可预览的内容', {icon: 2});
+          return;
+        }
+        
+        // 创建预览窗口
+        var previewIndex = layer.open({
+          type: 2,
+          title: '预览页面',
+          area: ['90%', '90%'],
+          content: '/api/preview-kr-tags?kr_tags=' + encodeURIComponent(krTags),
+          success: function(layero, index) {
+            // 备用方案：通过URL参数传递
+            // 同时尝试postMessage（如果iframe已加载）
+            var iframe = layero.find('iframe')[0];
+            if (iframe) {
+              // 延迟发送，确保iframe已加载
+              setTimeout(function() {
+                try {
+                  iframe.contentWindow.postMessage({
+                    type: 'kr_tags_content',
+                    content: krTags
+                  }, '*');
+                } catch(e) {
+                  console.log('postMessage failed, using URL parameter instead');
+                }
+              }, 500);
+            }
+          }
+        });
+      }
+      
+      // 预览按钮事件
+      document.getElementById('direct-preview-btn')?.addEventListener('click', function(){
+        var krTags = document.getElementById('direct-result-content').textContent;
+        previewKrTags(krTags);
+      });
+      
+      document.getElementById('schema-preview-btn')?.addEventListener('click', function(){
+        var krTags = document.getElementById('schema-result-content').textContent;
+        previewKrTags(krTags);
+      });
+      
+      document.getElementById('two-step-preview-btn')?.addEventListener('click', function(){
+        var krTags = document.getElementById('two-step-kr-content').textContent;
+        previewKrTags(krTags);
+      });
+      
+      // 复制按钮
+      document.getElementById('direct-copy-btn')?.addEventListener('click', function(){
+        var text = document.getElementById('direct-result-content').textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          layer.msg('已复制到剪贴板', {icon: 1});
+        });
+      });
+      
+      document.getElementById('schema-copy-btn')?.addEventListener('click', function(){
+        var text = document.getElementById('schema-result-content').textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          layer.msg('已复制到剪贴板', {icon: 1});
+        });
+      });
+      
+      document.getElementById('two-step-copy-btn')?.addEventListener('click', function(){
+        var text = document.getElementById('two-step-kr-content').textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          layer.msg('已复制到剪贴板', {icon: 1});
+        });
+      });
+      
+      // 刷新列表
+      document.getElementById('refresh-list-btn')?.addEventListener('click', function(){
+        var listType = document.getElementById('list-type-select').value;
+        var tbody = document.getElementById('generated-list-tbody');
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">加载中...</td></tr>';
+        
+        var url = listType === 'kr_tags' ? '/api/kr-tags' : '/api/schemas';
+        
+        fetch(url, {
+          headers: {
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          }
+        })
+        .then(response => response.json())
+        .then(result => {
+          if(result.status === 'success') {
+            var items = result.kr_tags || result.schemas || [];
+            if(items.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">暂无数据</td></tr>';
+            } else {
+              tbody.innerHTML = items.map(function(item) {
+                return '<tr>' +
+                  '<td>' + (item.name || '未命名') + '</td>' +
+                  '<td>' + (item.type || item.schema?.type || '-') + '</td>' +
+                  '<td>' + (item.created_at ? new Date(item.created_at).toLocaleString() : '-') + '</td>' +
+                  '<td>' +
+                    '<a href="/api/' + (listType === 'kr_tags' ? 'kr-tags' : 'schemas') + '/' + item._id + '" class="layui-btn layui-btn-xs">查看</a> ' +
+                    '<button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteItem(\'' + item._id + '\', \'' + listType + '\')">删除</button>' +
+                  '</td>' +
+                '</tr>';
+              }).join('');
+            }
+          }
+        })
+        .catch(error => {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">加载失败：' + error.message + '</td></tr>';
+        });
+      });
+    });
+    
+    function deleteItem(id, type) {
+      layui.use('layer', function(){
+        var layer = layui.layer;
+        layer.confirm('确认删除？', {icon: 3, title: '提示'}, function(index){
+          // TODO: 实现删除API
+          layer.msg('删除功能待实现', {icon: 0});
+          layer.close(index);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
+

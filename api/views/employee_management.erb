@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>员工管理系统</title>
+  <!-- 引入 layui.css -->
+  <link href="//unpkg.com/layui@2.12.1/dist/css/layui.css" rel="stylesheet">
+  <!-- 引入 layui.js -->
+  <script src="//unpkg.com/layui@2.12.1/dist/layui.js"></script>
+  <style>
+    body { padding: 20px; background: #f2f2f2; }
+    .page-header { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="layui-fluid">
+    <!-- 页面标题 -->
+    <div class="layui-card page-header">
+      <div class="layui-card-body">
+        <h1>员工管理系统</h1>
+        <p>演示 kr:col 列级FK和枚举功能</p>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="layui-card">
+      <div class="layui-card-header">
+        员工列表
+      </div>
+      <div class="layui-card-body">
+        
+        <!-- 使用 kr:datatable 和 kr:col（核心！） -->
+        <kr:datatable id="employee_table" source="org_employees" page="true" limit="15">
+          
+          <!-- 普通列 -->
+          <kr:col title="工号" field="employee_id" width="100" sort="true" fixed="left" />
+          <kr:col title="姓名" field="name" width="120" sort="true" />
+          
+          <!-- FK列1: 所属组织 -->
+          <kr:col 
+            title="所属组织" 
+            field="org_id"
+            relation="org"
+            relation_field="name"
+            width="150" />
+          
+          <!-- FK列2: 所属部门 -->
+          <kr:col 
+            title="所属部门" 
+            field="department_id"
+            relation="department"
+            relation_field="name"
+            width="150" />
+          
+          <!-- FK列3: 职位 -->
+          <kr:col 
+            title="职位" 
+            field="position_id"
+            relation="position"
+            relation_field="name"
+            width="120" />
+          
+          <!-- 普通列 -->
+          <kr:col title="邮箱" field="email" width="180" />
+          <kr:col title="手机号" field="phone" width="120" />
+          
+          <!-- 枚举列1: 性别 -->
+          <kr:col 
+            title="性别" 
+            field="gender" 
+            type="enum"
+            enum="男,女,未知"
+            width="80" />
+          
+          <!-- 枚举列2: 状态 -->
+          <kr:col 
+            title="状态" 
+            field="status" 
+            type="enum"
+            enum="在职,离职,试用期"
+            width="100" />
+          
+          <!-- 布尔列 -->
+          <kr:col title="是否负责人" field="is_leader" width="100" />
+          
+          <kr:col title="入职日期" field="entry_date" width="120" sort="true" />
+          
+        </kr:datatable>
+        
+      </div>
+    </div>
+    
+    <!-- 说明卡片 -->
+    <div class="layui-card" style="margin-top: 20px;">
+      <div class="layui-card-header">
+        技术说明
+      </div>
+      <div class="layui-card-body">
+        <ul>
+          <li><b>列级FK声明</b>: 使用 relation="department" 自动关联 org_departments 集合</li>
+          <li><b>零配置</b>: RelationRegistry 自动发现集合名称</li>
+          <li><b>批量查询</b>: MongoQueryEngine 批量加载关联数据，避免 N+1 问题</li>
+          <li><b>枚举支持</b>: 自动生成枚举映射和着色</li>
+          <li><b>协议自适应</b>: 根据环境自动选择完整/紧凑/加密协议</li>
+        </ul>
+        
+        <div style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-left: 3px solid #1E9FFF;">
+          <b>当前协议模式</b>: 
+          <%= ENV['RACK_ENV'] == 'production' ? '🔒 加密模式（不透明）' : '📖 完整模式（透明）' %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>员工管理系统</title>
+    <link href="//unpkg.com/layui@2.12.1/dist/css/layui.css" rel="stylesheet">
+    <script src="//unpkg.com/layui@2.12.1/dist/layui.js"></script>
+    <style>
+        body { padding: 20px; background: #f2f2f2; }
+        .page-header { margin-bottom: 20px; }
+    </style>
+</head>
+<body class="layui-fluid">
+    <!-- 页面标题 -->
+    <div class="layui-card page-header">
+        <div class="layui-card-body">
+            <h1>员工管理系统</h1>
+            <p>参考完整实现的高级表格系统</p>
+        </div>
+    </div>
+
+    <!-- 搜索过滤区域 -->
+    <l:t-top>
+        <l:t-item text="姓名|工号|邮箱" field="name|employee_id|email"/>
+        <l:t-item-sel text="性别" field="gender" enum="男,女,未知"/>
+        <l:t-item-sel text="状态" field="status" enum="在职,离职,试用期"/>
+        <l:t-item-sel text="部门" field="department_id" enum="技术部,销售部,人事部,财务部"/>
+        <l:t-item-date text="入职时间" field="entry_date" />
+    </l:t-top>
+
+    <!-- 标签页 -->
+    <l:tab id="emp_tab" filter="emp_tab">
+        <l:tab-item lbl="全部员工" id="all_emp" sel="true">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <l:layui>
+                        <l:t bind_id='emp-table' model='org_employees'>
+                            <!-- 工具栏 -->
+                            <l:t-tb>
+                                <l:t-dpbtn id="btn_batch" text="批量操作" enum="批量导出,批量删除,批量修改部门" cb="batchOperation" url="batch_export,batch_delete,batch_update_dept"/>
+                                <button class="layui-btn" onclick="addEmployee()">新增员工</button>
+                                <button class="layui-btn layui-btn-primary" onclick="refreshTable()">刷新</button>
+                            </l:t-tb>
+                            
+                            <!-- 表格列配置 -->
+                            <l:t-col type="checkbox" />
+                            <l:t-col title="工号" field="employee_id" width="100" sort="true" fixed="left" />
+                            <l:t-col title="姓名" field="name" width="120" sort="true" />
+                            <l:t-col title="性别" field="gender" type="enum" enum="男,女,未知" width="80" />
+                            <l:t-col title="邮箱" field="email" width="180" />
+                            <l:t-col title="手机号" field="phone" width="120" />
+                            <l:t-col title="所属部门" field="department_id" fk="org_departments,department_id,name" width="150" />
+                            <l:t-col title="职位" field="position_id" fk="org_positions,position_id,name" width="120" />
+                            <l:t-col title="状态" field="status" type="enum" enum="在职,离职,试用期" width="100" />
+                            <l:t-col title="入职日期" field="entry_date" width="120" sort="true" />
+                            <l:t-col title="操作" type="op" width="200" custom="true">
+                                <l:t-btn title="编辑" url="/emp/edit?_id={{d._id}}"/>
+                                <l:t-btn title="查看详情" url="/emp/detail?_id={{d._id}}"/>
+                                <l:t-btn title="删除" cb="deleteEmployee('{{d._id}}')" confirm="确定要删除这个员工吗？" type="cmd"/>
+                            </l:t-col>
+                        </l:t>
+                    </l:layui>
+                </div>
+            </div>
+        </l:tab-item>
+        
+        <l:tab-item lbl="在职员工" id="active_emp">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table id="active-table" lay-filter="emp-table"></table>
+                </div>
+            </div>
+        </l:tab-item>
+        
+        <l:tab-item lbl="离职员工" id="inactive_emp">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table id="inactive-table" lay-filter="emp-table"></table>
+                </div>
+            </div>
+        </l:tab-item>
+    </l:tab>
+
+    <script>
+        // 全局函数
+        function batchOperation(option) {
+            var selectedIds = getSelectedIds('emp-table');
+            if (selectedIds.length === 0) {
+                layer.msg('请先选择要操作的员工');
+                return;
+            }
+            
+            switch(option.text) {
+                case '批量导出':
+                    exportEmployees(selectedIds);
+                    break;
+                case '批量删除':
+                    batchDeleteEmployees(selectedIds);
+                    break;
+                case '批量修改部门':
+                    batchUpdateDepartment(selectedIds);
+                    break;
+            }
+        }
+        
+        function addEmployee() {
+            layer.open({
+                type: 2,
+                title: '新增员工',
+                content: '/emp/add',
+                area: ['800px', '600px'],
+                end: function() {
+                    refreshTable();
+                }
+            });
+        }
+        
+        function deleteEmployee(id) {
+            layer.confirm('确定要删除这个员工吗？', function(index) {
+                // 调用删除API
+                $.post('/api/employees/' + id, {_method: 'DELETE'}, function(res) {
+                    if (res.code === 0) {
+                        layer.msg('删除成功');
+                        refreshTable();
+                    } else {
+                        layer.msg(res.msg || '删除失败');
+                    }
+                });
+                layer.close(index);
+            });
+        }
+        
+        function refreshTable() {
+            layui.table.reload('emp-table');
+        }
+        
+        function getSelectedIds(tableId) {
+            var checkStatus = layui.table.checkStatus(tableId);
+            return checkStatus.data.map(function(item) { return item._id; });
+        }
+        
+        function exportEmployees(ids) {
+            var params = ids ? '?ids=' + ids.join(',') : '';
+            window.open('/api/employees/export' + params);
+        }
+        
+        function batchDeleteEmployees(ids) {
+            layer.confirm('确定要删除选中的员工吗？', function(index) {
+                $.post('/api/employees/batch_delete', {ids: ids}, function(res) {
+                    if (res.code === 0) {
+                        layer.msg('删除成功');
+                        refreshTable();
+                    } else {
+                        layer.msg(res.msg || '删除失败');
+                    }
+                });
+                layer.close(index);
+            });
+        }
+        
+        function batchUpdateDepartment(ids) {
+            layer.prompt({title: '请输入新部门ID'}, function(value, index) {
+                $.post('/api/employees/batch_update_dept', {ids: ids, department_id: value}, function(res) {
+                    if (res.code === 0) {
+                        layer.msg('更新成功');
+                        refreshTable();
+                    } else {
+                        layer.msg(res.msg || '更新失败');
+                    }
+                });
+                layer.close(index);
+            });
+        }
+        
+        window.openurl = function(url) {
+            layer.open({
+                type: 2,
+                title: '详情',
+                content: url,
+                area: ['800px', '600px']
+            });
+        }
+    </script>
+</body>
+</html>
+

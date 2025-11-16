@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>布局与内容分离演示</title>
+  <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.5.6/css/layui.css">
+  <style>
+    body {
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    
+    .container {
+      width: 100%;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .file-list {
+      margin-top: 20px;
+    }
+    
+    .file-item {
+      cursor: pointer;
+      padding: 10px;
+      border: 1px solid #e6e6e6;
+      margin-bottom: 10px;
+      border-radius: 2px;
+    }
+    
+    .file-item:hover {
+      background-color: #f2f2f2;
+    }
+    
+    .file-item.active {
+      background-color: #5FB878;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="layui-fluid">
+    <div class="layui-row">
+      <div class="layui-col-md12">
+        <div class="container">
+          <h1>布局与内容分离演示</h1>
+          <p>选择布局文件和内容文件，然后点击"渲染"按钮查看效果。</p>
+          
+          <div class="layui-row">
+            <div class="layui-col-md5">
+              <div class="layui-card">
+                <div class="layui-card-header">布局文件</div>
+                <div class="layui-card-body">
+                  <div class="file-list layout-files">
+                    <% @layout_files.each do |file| %>
+                      <div class="file-item" data-file="<%= file %>">
+                        <i class="layui-icon layui-icon-template"></i> <%= file %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="layui-col-md5">
+              <div class="layui-card">
+                <div class="layui-card-header">内容文件</div>
+                <div class="layui-card-body">
+                  <div class="file-list content-files">
+                    <% @content_files.each do |file| %>
+                      <div class="file-item" data-file="<%= file %>">
+                        <i class="layui-icon layui-icon-file"></i> <%= file %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="layui-col-md2">
+              <div class="layui-card">
+                <div class="layui-card-header">操作</div>
+                <div class="layui-card-body">
+                  <button class="layui-btn layui-btn-fluid" id="render-btn" disabled>渲染</button>
+                  <button class="layui-btn layui-btn-fluid layui-btn-normal" id="designer-btn" style="margin-top: 10px;" disabled>设计器</button>
+                  <a class="layui-btn layui-btn-fluid layui-btn-primary" href="/separated/project_form" style="margin-top: 10px;">立项信息登记示例</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://www.layuicdn.com/layui-v2.5.6/layui.js"></script>
+  <script>
+    layui.use(['jquery'], function(){
+      var $ = layui.jquery;
+      
+      var selectedLayout = null;
+      var selectedContent = null;
+      
+      // 选择布局文件
+      $('.layout-files .file-item').on('click', function(){
+        $('.layout-files .file-item').removeClass('active');
+        $(this).addClass('active');
+        selectedLayout = $(this).data('file');
+        updateButtons();
+      });
+      
+      // 选择内容文件
+      $('.content-files .file-item').on('click', function(){
+        $('.content-files .file-item').removeClass('active');
+        $(this).addClass('active');
+        selectedContent = $(this).data('file');
+        updateButtons();
+      });
+      
+      // 更新按钮状态
+      function updateButtons() {
+        if (selectedLayout && selectedContent) {
+          $('#render-btn, #designer-btn').removeAttr('disabled');
+        } else {
+          $('#render-btn, #designer-btn').attr('disabled', 'disabled');
+        }
+      }
+      
+      // 渲染按钮点击事件
+      $('#render-btn').on('click', function(){
+        if (selectedLayout && selectedContent) {
+          window.location.href = '/separated/render?layout=' + selectedLayout + '&content=' + selectedContent;
+        }
+      });
+      
+      // 设计器按钮点击事件
+      $('#designer-btn').on('click', function(){
+        if (selectedLayout && selectedContent) {
+          window.location.href = '/separated/designer?layout=' + selectedLayout + '&content=' + selectedContent;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

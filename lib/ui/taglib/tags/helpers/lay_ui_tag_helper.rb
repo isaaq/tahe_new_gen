@@ -37,6 +37,7 @@ module LayUITagHelper
 
   require_relative 'lay_ui_tag_helper_table'
   require_relative 'lay_ui_tag_helper_form'
+  require_relative 'lay_ui_tag_helper_tree'
 
   def layui(content)
     out = <<-EOF

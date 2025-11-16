@@ -170,6 +170,180 @@ class PromptTemplateService
         3. 使用正确的错误代码
         4. 包含适当的注释说明
       PROMPT
+
+      generate_kr_tags: <<~PROMPT,
+        你是一个低代码平台的页面生成器。
+        根据用户的自然语言需求，直接生成kr标签（框架的声明式标签）。
+        
+        用户需求：
+        {{content}}
+        
+        数据库上下文：
+        {{context}}
+        
+        可用的kr标签：
+        - <kr:datatable> - 数据表格，属性：source(数据源), page(分页), checkbox(多选)
+        - <kr:col> - 表格列，属性：title(标题), field(字段名), width(宽度), relation(关联名), relation_field(关联显示字段), enum(枚举值)
+        - <kr:form> - 表单，属性：model(模型), action(提交地址), method(方法)
+        - <kr:input> - 输入框，属性：name(字段名), label(标签), required(必填), type(类型)
+        - <kr:select> - 下拉选择，属性：name(字段名), label(标签), relation(关联名), options(选项)
+        - <kr:tree_table_layout> - 树表联动布局，属性：tree_source(树数据源), table_source(表格数据源), link_param(联动参数)
+        - <kr:search_table> - 搜索表格，属性：table_source(数据源), page(分页)
+        - <kr:row-actions> - 行操作，包含 <kr:action> 子标签
+        - <kr:action> - 操作按钮，属性：name(操作名), label(标签), confirm(确认消息)
+        
+        kr标签使用说明：
+        1. 关联字段使用 relation 属性（语义化），如 relation="category" 会自动发现对应的集合
+        2. 枚举字段使用 enum 属性，值为逗号分隔的选项，如 enum="待支付,已支付,已完成"
+        3. 字段列表使用 fields 属性，值为逗号分隔的字段名，如 fields="name,price,category"
+        4. 布尔属性使用 "true" 或 "false" 字符串
+        
+        请直接生成完整的ERB文件内容，包含kr标签。
+        只返回ERB代码，不要其他说明文字。
+        
+        示例输出格式：
+        ```erb
+        <kr:datatable source="products" page="true">
+          <kr:col title="产品名" field="name" width="200" />
+          <kr:col title="价格" field="price" width="120" />
+          <kr:col title="分类" field="category_id" relation="category" relation_field="name" width="150" />
+          <kr:col title="状态" field="status" enum="在售,下架,缺货" width="100" />
+          <kr:row-actions>
+            <kr:action name="view" label="查看" />
+            <kr:action name="edit" label="编辑" />
+            <kr:action name="delete" label="删除" confirm="确认删除？" />
+          </kr:row-actions>
+        </kr:datatable>
+        ```
+      PROMPT
+
+      generate_kr_tags_from_schema: <<~PROMPT,
+        根据以下schema配置，生成对应的kr标签。
+        
+        Schema配置：
+        {{schema}}
+        
+        数据库上下文：
+        {{context}}
+        
+        可用的kr标签：
+        - <kr:datatable> - 数据表格
+        - <kr:col> - 表格列
+        - <kr:form> - 表单
+        - <kr:tree_table_layout> - 树表联动布局
+        - <kr:search_table> - 搜索表格
+        - <kr:row-actions> - 行操作
+        
+        请根据schema中的配置生成对应的kr标签。
+        只返回ERB代码，不要其他说明文字。
+      PROMPT
+
+      generate_crud_schema: <<~PROMPT,
+        你是一个低代码平台的后台管理页面配置生成器。
+        根据用户的自然语言需求，生成标准的CRUD页面配置schema。
+        
+        用户需求：
+        {{content}}
+        
+        数据库上下文：
+        {{context}}
+        
+        请生成以下格式的YAML schema：
+        
+        ```yaml
+        type: datamanage
+        data: {{primary_collection}}  # 主数据表
+        fields:
+          - {{field1}}
+          - {{field2}}
+          # ... 从需求中提取的字段列表
+        actions: [add, edit, delete, view]  # 从需求中提取的操作
+        layout: auto  # auto/tree_table/search_table
+        relations:  # 自动发现的关联表
+          - name: {{relation_name}}
+            collection: {{collection_name}}
+            type: belongs_to  # belongs_to/has_many
+            field: {{foreign_key_field}}
+        ```
+        
+        要求：
+        1. 识别主数据表和关联表
+        2. 从数据库上下文推断字段列表
+        3. 识别需要的操作（增删改查）
+        4. 推断合适的布局类型
+        5. 识别关联关系
+        
+        只返回YAML格式的schema，不要其他说明文字。
+      PROMPT
+
+      recommend_plugins: <<~PROMPT,
+        你是一个插件推荐专家。根据用户需求，从以下插件列表中选择最合适的插件。
+        
+        用户需求：
+        {{requirement}}
+        
+        可用插件列表：
+        {{plugins}}
+        
+        请分析需求并推荐：
+        1. 必须安装的插件（must_have）- 核心功能必需的插件
+        2. 可选插件（optional）- 增强功能的插件
+        3. 推荐理由（explanation）- 简要说明为什么推荐这些插件
+        
+        请以JSON格式返回，不要其他说明文字：
+        {
+          "must_have": ["plugin_id1", "plugin_id2"],
+          "optional": ["plugin_id3", "plugin_id4"],
+          "explanation": "推荐理由..."
+        }
+      PROMPT
+
+      configure_plugin: <<~PROMPT,
+        你是一个插件配置专家。根据用户输入，为插件生成合适的配置。
+        
+        插件名称：{{plugin_name}}
+        插件描述：{{plugin_description}}
+        
+        用户输入：
+        {{user_input}}
+        
+        配置项说明：
+        {{config_schema}}
+        
+        请根据用户输入生成配置，以JSON格式返回，不要其他说明文字：
+        {
+          "config": {
+            "field1": "value1",
+            "field2": "value2"
+          },
+          "explanation": "配置说明..."
+        }
+      PROMPT
+
+      suggest_plugin_combination: <<~PROMPT,
+        你是一个插件组合专家。根据用户需求，推荐一组可以协同工作的插件。
+        
+        用户需求：
+        {{requirements}}
+        
+        可用插件列表：
+        {{plugins}}
+        
+        请推荐插件组合，包括：
+        1. 插件列表（plugins）- 推荐的插件ID数组
+        2. 安装顺序（order）- 建议的安装顺序
+        3. 配置指南（config）- 每个插件的配置建议
+        
+        请以JSON格式返回，不要其他说明文字：
+        {
+          "plugins": ["plugin_id1", "plugin_id2"],
+          "order": ["plugin_id1", "plugin_id2"],
+          "config": {
+            "plugin_id1": {"field1": "value1"},
+            "plugin_id2": {"field2": "value2"}
+          }
+        }
+      PROMPT
     }
   end
 

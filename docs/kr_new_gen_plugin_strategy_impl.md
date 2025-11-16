@@ -6,11 +6,20 @@
 
 ## 2. 核心目标
 
-- 实现一套策略注册与选择机制（StrategyRegistry）
-- 支持多种业务行为（如保存、提交、查询）的多种策略实现（如草稿、正常、暂存发布）
-- 插件结构支持按 domain + action + context 三维度区分（如 ['order', 'submit', 'draft']）
-- 策略实现类支持动态加载和自动注册
-- 插件注册信息支持通过 DSL 或配置文件定义
+- ✅ 实现策略注册与选择机制（StrategyRegistry）
+- ✅ 支持多种业务行为（如保存、提交、查询）的多种策略实现
+- ✅ 插件结构支持按 domain + action + context 三维度区分
+- ✅ 策略实现类支持动态加载和自动注册
+- ✅ 插件注册信息支持通过 DSL 或配置文件定义
+- ✅ 提供字段类型系统，支持复杂业务字段验证和转换
+- ✅ 实现策略生命周期钩子，支持扩展点
+
+## 2.1 设计原则
+
+1. **开闭原则**：系统对扩展开放，对修改关闭
+2. **单一职责**：每个策略只负责一个明确的业务场景
+3. **依赖倒置**：高层模块不依赖低层模块，都依赖于抽象
+4. **配置化**：通过配置定义策略，支持热更新
 
 ## 3. 系统架构
 
@@ -428,9 +437,136 @@ end
 2. **新增字段类型**：扩展 FieldType 类支持新的数据类型
 3. **配置热更新**：支持不重启应用的情况下更新策略配置
 
-## 8. 后续优化方向
+## 8. 高级用法
 
-1. **策略缓存机制**：提高策略解析性能
-2. **策略组合**：支持多个策略的组合使用
+### 8.1 策略组合模式
+
+有时一个业务场景需要组合多个策略共同完成，可以通过组合模式实现：
+
+```ruby
+class CompositeStrategy < Strategy::BaseStrategy
+  def initialize(*strategies)
+    @strategies = strategies
+  end
+  
+  def execute(params = {})
+    @strategies.each_with_object([]) do |strategy, results|
+      results << strategy.execute(params.merge(previous_results: results))
+    end.last
+  end
+end
+```
+
+### 8.2 策略链与中间件
+
+支持在策略执行前后插入中间件：
+
+```ruby
+class MiddlewareAwareStrategy < Strategy::BaseStrategy
+  def initialize(strategy)
+    @strategy = strategy
+    @middlewares = []
+  end
+  
+  def use(middleware)
+    @middlewares << middleware
+  end
+  
+  def execute(params = {})
+    @middlewares.inject(->(p) { @strategy.execute(p) }) do |chain, middleware|
+      ->(p) { middleware.call(p, &chain) }
+    end.call(params)
+  end
+end
+```
+
+## 9. 性能优化
+
+### 9.1 策略缓存
+
+```ruby
+# 在 StrategyRegistry 中添加缓存
+class StrategyRegistry
+  def resolve_with_cache(domain:, action:, context: 'default')
+    @cache ||= {}
+    cache_key = [domain, action, context].join(':')
+    
+    @cache[cache_key] ||= resolve(domain: domain, action: action, context: context)
+  end
+end
+```
+
+### 9.2 懒加载策略
+
+```ruby
+# 使用 autoload 实现策略类的懒加载
+autoload :DraftSaveStrategy, 'plugins/strategy/save/draft_save_strategy'
+autoload :NormalSaveStrategy, 'plugins/strategy/save/normal_save_strategy'
+```
+
+## 10. 最佳实践
+
+### 10.1 策略设计原则
+
+1. **单一职责**：每个策略只负责一个具体的业务场景
+2. **无状态**：策略实例应该是无状态的，所有状态都应该通过参数传递
+3. **可测试**：策略应该易于单元测试，不依赖外部状态
+4. **可组合**：策略应该设计为可以与其他策略组合使用
+
+### 10.2 错误处理
+
+```ruby
+class SafeStrategy < Strategy::BaseStrategy
+  def execute(params = {})
+    super
+  rescue StandardError => e
+    # 记录错误并返回友好错误信息
+    Rails.logger.error("策略执行失败: #{e.message}\n#{e.backtrace.join("\n")}")
+    { success: false, error: e.message }
+  end
+end
+```
+
+## 11. 后续优化方向
+
+1. **策略缓存机制**：实现基于内存或Redis的缓存，提高策略解析性能
+2. **策略组合**：支持声明式的策略组合语法
 3. **策略版本控制**：支持策略的版本管理和回滚
 4. **可视化配置**：提供 Web 界面配置策略
+5. **性能监控**：添加策略执行时间监控和告警
+6. **A/B测试**：支持策略的A/B测试和灰度发布
+
+## 12. 常见问题解答
+
+### 12.1 如何添加新的策略？
+
+1. 在 `lib/plugins/strategy/` 下创建对应的策略类
+2. 继承 `Strategy::BaseStrategy`
+3. 使用 `strategy_for` 注册策略
+4. 在 `strategy.yaml` 中添加配置
+
+### 12.2 如何调试策略？
+
+```ruby
+# 在策略中添加调试信息
+def perform(params = {})
+  Rails.logger.debug("执行策略: #{self.class.name}, 参数: #{params.inspect}")
+  # ...策略逻辑...
+end
+```
+
+### 12.3 如何测试策略？
+
+```ruby
+# spec/strategies/draft_save_strategy_spec.rb
+RSpec.describe Plugins::Strategy::Save::DraftSaveStrategy do
+  let(:strategy) { described_class.new }
+  let(:params) { { data: { title: '测试' } } }
+  
+  it '成功保存草稿' do
+    result = strategy.execute(params)
+    expect(result[:success]).to be true
+    expect(result[:draft_id]).to be_present
+  end
+end
+```

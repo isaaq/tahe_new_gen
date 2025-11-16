@@ -30,5 +30,6 @@ gem 'thor'
 gem 'yaml'
 gem 'faraday'
 gem 'radius'
+gem 'chunky_png'
 gem "ruby-lsp", "~> 0.23.11"
 gem "debug", "~> 1.10"

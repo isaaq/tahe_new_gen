@@ -248,18 +248,31 @@ module MongoCommonUtil
       # 处理自定义字段类型
       process_custom_fields_for_storage(data) if data.is_a?(Hash)
       
-      # 添加系统字段
-      data[:_update_time] = Time.now
-      
       # 处理查询条件
       mongo_parse_query!(query_hash)
       
       # 执行更新
-      if data.key?('$set') || data.key?(:$set)
-        # 如果已经是更新操作符格式，直接使用
-        ret = @db.db[@db.table].update_one(query_hash, data)
+      if has_mongo_operators?(data)
+        # 如果包含MongoDB操作符，需要同时更新系统字段
+        update_data = data.dup
+        
+        # 确保所有键都是字符串格式，避免符号键的问题
+        update_data = normalize_mongo_keys(update_data)
+        
+        if update_data.key?('$set')
+          # 如果已经有$set，在$set中添加系统字段
+          update_data['$set'] ||= {}
+          update_data['$set']['_update_time'] = Time.now
+        else
+          # 如果没有$set，创建一个$set来更新系统字段
+          update_data['$set'] = { '_update_time' => Time.now }
+        end
+        
+        # 使用 update_one 方法，确保传递正确的参数
+        ret = @db.db[@db.table].update_one(query_hash, update_data)
       else
         # 否则转换为$set格式
+        data[:_update_time] = Time.now
         ret = @db.db[@db.table].update_one(query_hash, { '$set' => data })
       end
       
@@ -279,18 +292,31 @@ module MongoCommonUtil
       # 处理自定义字段类型
       process_custom_fields_for_storage(data) if data.is_a?(Hash)
       
-      # 添加系统字段
-      data[:_update_time] = Time.now
-      
       # 处理查询条件
       mongo_parse_query!(query_hash)
       
       # 执行更新
-      if data.key?('$set') || data.key?(:$set)
-        # 如果已经是更新操作符格式，直接使用
-        ret = @db.db[@db.table].update_many(query_hash, data)
+      if has_mongo_operators?(data)
+        # 如果包含MongoDB操作符，需要同时更新系统字段
+        update_data = data.dup
+        
+        # 确保所有键都是字符串格式，避免符号键的问题
+        update_data = normalize_mongo_keys(update_data)
+        
+        if update_data.key?('$set')
+          # 如果已经有$set，在$set中添加系统字段
+          update_data['$set'] ||= {}
+          update_data['$set']['_update_time'] = Time.now
+        else
+          # 如果没有$set，创建一个$set来更新系统字段
+          update_data['$set'] = { '_update_time' => Time.now }
+        end
+        
+        # 使用 update_many 方法，确保传递正确的参数
+        ret = @db.db[@db.table].update_many(query_hash, update_data)
       else
         # 否则转换为$set格式
+        data[:_update_time] = Time.now
         ret = @db.db[@db.table].update_many(query_hash, { '$set' => data })
       end
       
@@ -315,6 +341,38 @@ module MongoCommonUtil
   def gen_sample_ui_code; end
 
   private
+
+  # 检查是否包含MongoDB更新操作符
+  def has_mongo_operators?(data)
+    return false unless data.is_a?(Hash)
+    
+    # 检查是否包含以$开头的键（MongoDB操作符）
+    data.keys.any? { |key| key.to_s.start_with?('$') }
+  end
+
+  # 规范化MongoDB键，确保所有键都是字符串格式
+  def normalize_mongo_keys(data)
+    return data unless data.is_a?(Hash)
+    
+    normalized = {}
+    data.each do |key, value|
+      normalized_key = key.is_a?(Symbol) ? key.to_s : key
+      
+      if value.is_a?(Hash)
+        # 递归处理嵌套的哈希
+        normalized[normalized_key] = normalize_mongo_keys(value)
+      elsif value.is_a?(Array)
+        # 处理数组中的哈希
+        normalized[normalized_key] = value.map do |item|
+          item.is_a?(Hash) ? normalize_mongo_keys(item) : item
+        end
+      else
+        normalized[normalized_key] = value
+      end
+    end
+    
+    normalized
+  end
 
   def parse_file_model(path)
     return unless File.exist?(path)

@@ -11,6 +11,7 @@ class LayuiElement < BaseUIElement
 
   def output
     pre_process
-    '//[' + object_tree.to_json  + ']//'+ "\n" + output_tag
+    # 暂时禁用JSON前缀，专注于标签转换
+    output_tag
   end
 end

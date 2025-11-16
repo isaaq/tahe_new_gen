@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>立项信息登记</title>
+  
+  <!-- 引入Layui -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/css/layui.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/layui.min.js"></script>
+  
+  <!-- 引入GridStack -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@4.2.5/dist/gridstack.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@4.2.5/dist/gridstack-all.js"></script>
+  
+  <!-- 添加样式 -->
+  <style>
+    body {
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .layui-form-label {
+      width: 110px;
+    }
+    .layui-input-inline {
+      width: 190px;
+    }
+    .layui-btn-container {
+      margin-bottom: 10px;
+    }
+    .layui-title {
+      text-align: center;
+      font-size: 24px;
+      margin: 20px 0;
+    }
+    .layui-tab {
+      margin-top: 20px;
+    }
+    .required:before {
+      content: "* ";
+      color: red;
+    }
+    .kr-grid-layout {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+}
+
+.kr-grid-item {
+  position: absolute;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.kr-grid-item-content {
+  padding: 15px;
+  height: 100%;
+  overflow: auto;
+}
+
+/* 设计器模式样式 */
+.kr-grid-layout.designer-mode .kr-grid-item {
+  border: 2px dashed #409eff;
+  cursor: move;
+}
+
+.kr-grid-layout.designer-mode .kr-grid-item:hover {
+  border-color: #67c23a;
+  box-shadow: 0 2px 8px rgba(103, 194, 58, 0.3);
+}
+
+.kr-grid-layout.designer-mode .kr-grid-item.selected {
+  border-color: #f56c6c;
+  box-shadow: 0 2px 8px rgba(245, 108, 108, 0.3);
+}
+
+  </style>
+</head>
+<body>
+  <div class="container layui-form">
+    <div class="kr-grid-layout" data-grid-config='{"columns":12,"cellHeight":50,"margin":10,"items":[{"id":"toolbar","x":0,"y":0,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"page_title","x":0,"y":1,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"tabs","x":0,"y":2,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"basic_info","x":0,"y":3,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"form_row1","x":0,"y":4,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"form_row2","x":0,"y":5,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"form_row3","x":0,"y":6,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"form_row4","x":0,"y":7,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"form_row5","x":0,"y":8,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"client_info_title","x":0,"y":9,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"client_info_form","x":0,"y":10,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"client_info_form2","x":0,"y":11,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"applicant_info_title","x":0,"y":12,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"applicant_info_form","x":0,"y":13,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"applicant_info_form2","x":0,"y":14,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"remarks_title","x":0,"y":15,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"remarks_content","x":0,"y":16,"w":12,"h":2,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"attachments_title","x":0,"y":18,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"attachments_upload","x":0,"y":19,"w":12,"h":1,"content":"","css_class":"","resizable":true,"draggable":true},{"id":"attachments_list","x":0,"y":20,"w":12,"h":2,"content":"","css_class":"","resizable":true,"draggable":true}]}'>
+<div class="kr-grid-item " 
+     data-gs-id="toolbar"
+     data-gs-x="0" 
+     data-gs-y="0" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="page_title"
+     data-gs-x="0" 
+     data-gs-y="1" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="tabs"
+     data-gs-x="0" 
+     data-gs-y="2" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="basic_info"
+     data-gs-x="0" 
+     data-gs-y="3" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row1"
+     data-gs-x="0" 
+     data-gs-y="4" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row2"
+     data-gs-x="0" 
+     data-gs-y="5" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row3"
+     data-gs-x="0" 
+     data-gs-y="6" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row4"
+     data-gs-x="0" 
+     data-gs-y="7" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="form_row5"
+     data-gs-x="0" 
+     data-gs-y="8" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="client_info_title"
+     data-gs-x="0" 
+     data-gs-y="9" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="client_info_form"
+     data-gs-x="0" 
+     data-gs-y="10" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="client_info_form2"
+     data-gs-x="0" 
+     data-gs-y="11" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="applicant_info_title"
+     data-gs-x="0" 
+     data-gs-y="12" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="applicant_info_form"
+     data-gs-x="0" 
+     data-gs-y="13" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="applicant_info_form2"
+     data-gs-x="0" 
+     data-gs-y="14" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="remarks_title"
+     data-gs-x="0" 
+     data-gs-y="15" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="remarks_content"
+     data-gs-x="0" 
+     data-gs-y="16" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="attachments_title"
+     data-gs-x="0" 
+     data-gs-y="18" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="attachments_upload"
+     data-gs-x="0" 
+     data-gs-y="19" 
+     data-gs-w="12" 
+     data-gs-h="1"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+<div class="kr-grid-item " 
+     data-gs-id="attachments_list"
+     data-gs-x="0" 
+     data-gs-y="20" 
+     data-gs-w="12" 
+     data-gs-h="2"
+     data-gs-resizable="true"
+     data-gs-draggable="true">
+  <div class="kr-grid-item-content">
+    
+  </div>
+</div>
+
+</div>
+  </div>
+  
+  <!-- 添加脚本 -->
+  <script>
+    layui.use(['form', 'laydate', 'upload', 'table'], function(){
+      var form = layui.form;
+      var laydate = layui.laydate;
+      var upload = layui.upload;
+      var table = layui.table;
+      
+      // 初始化日期选择器
+      laydate.render({
+        elem: '#date'
+      });
+      laydate.render({
+        elem: '#plan_start_date'
+      });
+      laydate.render({
+        elem: '#plan_end_date'
+      });
+      
+      // 初始化上传组件
+      upload.render({
+        elem: '#attachments',
+        url: '/upload/',
+        multiple: true,
+        done: function(res){
+          console.log(res);
+        }
+      });
+      
+      // 表单提交
+      form.on('submit(formSubmit)', function(data){
+        console.log(data.field);
+        return false;
+      });
+    });
+    
+    // KR 网格布局初始化
+(function() {
+  const gridLayout = document.querySelector('.kr-grid-layout');
+  if (!gridLayout) return;
+  
+  const config = JSON.parse(gridLayout.getAttribute('data-grid-config') || '{}');
+  
+  // 初始化网格项位置
+  function initGridItems() {
+    const items = gridLayout.querySelectorAll('.kr-grid-item');
+    items.forEach(item => {
+      const x = parseInt(item.getAttribute('data-gs-x')) || 0;
+      const y = parseInt(item.getAttribute('data-gs-y')) || 0;
+      const w = parseInt(item.getAttribute('data-gs-w')) || 1;
+      const h = parseInt(item.getAttribute('data-gs-h')) || 1;
+      
+      const cellWidth = gridLayout.offsetWidth / (config.columns || 12);
+      const cellHeight = config.cellHeight || 60;
+      
+      item.style.left = (x * cellWidth) + 'px';
+      item.style.top = (y * cellHeight) + 'px';
+      item.style.width = (w * cellWidth) + 'px';
+      item.style.height = (h * cellHeight) + 'px';
+    });
+  }
+  
+  // 设计器模式切换
+  window.toggleDesignerMode = function() {
+    gridLayout.classList.toggle('designer-mode');
+  };
+  
+  // 获取布局配置
+  window.getGridConfig = function() {
+    const items = [];
+    gridLayout.querySelectorAll('.kr-grid-item').forEach(item => {
+      items.push({
+        id: item.getAttribute('data-gs-id'),
+        x: parseInt(item.getAttribute('data-gs-x')),
+        y: parseInt(item.getAttribute('data-gs-y')),
+        w: parseInt(item.getAttribute('data-gs-w')),
+        h: parseInt(item.getAttribute('data-gs-h'))
+      });
+    });
+    return { items };
+  };
+  
+  // 初始化
+  initGridItems();
+  
+  // 响应式调整
+  window.addEventListener('resize', initGridItems);
+})();
+
+    
+    // 设计器模式切换
+    function toggleDesignMode() {
+      if (typeof toggleGridDesignerMode === 'function') {
+        toggleGridDesignerMode(true);
+      }
+    }
+  </script>
+</body>
+</html>

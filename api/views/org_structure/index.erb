@@ -1,0 +1,1104 @@
+<%# 组织结构管理主页面 %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css">
+<style>
+  /* 树形结构样式 */
+  .tree-view {
+    padding: 10px;
+  }
+  .tree-view ul {
+    list-style-type: none;
+    padding-left: 20px;
+  }
+  .tree-view li {
+    margin: 5px 0;
+  }
+  .org-node {
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .org-node:hover {
+    background-color: #f0f7ff;
+  }
+  .org-node.active {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  /* 卡片样式 */
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 20px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+  }
+  .card-tools {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* 表格样式 */
+  .table-responsive {
+    margin-top: 15px;
+  }
+  .table th {
+    background-color: #f8f9fa;
+  }
+  .table-actions {
+    white-space: nowrap;
+  }
+  
+  /* 表单样式 */
+  .custom-file-label::after {
+    content: "浏览";
+  }
+  
+  /* 头像预览 */
+  .avatar-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+  }
+  
+  /* 状态标签 */
+  .badge-success {
+    background-color: #28a745;
+  }
+  .badge-danger {
+    background-color: #dc3545;
+  }
+  .badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+  }
+  
+  /* 部门和组织树结构 */
+  .department-tree-container,
+  .org-tree-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+  }
+  
+  /* 员工列表 */
+  .employee-card {
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .employee-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  .employee-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  /* 搜索框 */
+  .search-box {
+    margin-bottom: 15px;
+  }
+  
+  /* 加载中状态 */
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+  .loading-spinner {
+    width: 3rem;
+    height: 3rem;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">组织架构</h5>
+          <div class="card-tools">
+            <button type="button" class="btn btn-sm btn-primary" id="btn-add-org">
+              <i class="fas fa-plus"></i> 添加组织
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="org-tree" class="tree-view"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs" id="org-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="org-info-tab" data-toggle="tab" href="#org-info" role="tab">组织信息</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="department-tab" data-toggle="tab" href="#departments" role="tab">部门管理</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="position-tab" data-toggle="tab" href="#positions" role="tab">职位管理</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="employee-tab" data-toggle="tab" href="#employees" role="tab">员工管理</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content" id="org-tabs-content">
+            <div class="tab-pane fade show active" id="org-info" role="tabpanel">
+              <div id="org-detail-container">
+                <div class="text-center py-5">
+                  <p class="text-muted">请在左侧选择一个组织</p>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="departments" role="tabpanel">
+              <div id="department-container">
+                <div class="text-center py-5">
+                  <p class="text-muted">请在左侧选择一个组织</p>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="positions" role="tabpanel">
+              <div id="position-container">
+                <div class="text-center py-5">
+                  <p class="text-muted">请在左侧选择一个组织</p>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="employees" role="tabpanel">
+              <div id="employee-container">
+                <div class="text-center py-5">
+                  <p class="text-muted">请在左侧选择一个组织</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 组织表单模态框 -->
+<div class="modal fade" id="org-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="org-modal-title">添加组织</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="org-form">
+          <input type="hidden" id="org-id">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="org-name">组织名称</label>
+              <input type="text" class="form-control" id="org-name" name="name" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="org-code">组织编码</label>
+              <input type="text" class="form-control" id="org-code" name="code" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="org-type">组织类型</label>
+              <select class="form-control" id="org-type" name="type">
+                <option value="公司">公司</option>
+                <option value="子公司">子公司</option>
+                <option value="分公司">分公司</option>
+                <option value="部门">部门</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="org-parent">上级组织</label>
+              <select class="form-control" id="org-parent" name="parent_id">
+                <option value="">无</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="org-description">组织描述</label>
+            <textarea class="form-control" id="org-description" name="description" rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="org-contact">联系人</label>
+              <input type="text" class="form-control" id="org-contact" name="contact">
+            </div>
+            <div class="form-group col-md-6">
+              <label for="org-phone">联系电话</label>
+              <input type="text" class="form-control" id="org-phone" name="phone">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="org-email">联系邮箱</label>
+              <input type="email" class="form-control" id="org-email" name="email">
+            </div>
+            <div class="form-group col-md-6">
+              <label for="org-sort">排序</label>
+              <input type="number" class="form-control" id="org-sort" name="sort_order" value="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="org-address">地址</label>
+            <input type="text" class="form-control" id="org-address" name="address">
+          </div>
+          <div class="form-group">
+            <label for="org-logo">组织Logo</label>
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="org-logo" name="logo">
+              <label class="custom-file-label" for="org-logo">选择文件</label>
+            </div>
+            <div id="org-logo-preview" class="mt-2"></div>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="org-status" name="status" checked>
+              <label class="custom-control-label" for="org-status">启用</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="btn-save-org">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 部门表单模态框 -->
+<div class="modal fade" id="department-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="department-modal-title">添加部门</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="department-form">
+          <input type="hidden" id="department-id">
+          <input type="hidden" id="department-org-id" name="org_id">
+          <div class="form-group">
+            <label for="department-name">部门名称</label>
+            <input type="text" class="form-control" id="department-name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="department-code">部门编码</label>
+            <input type="text" class="form-control" id="department-code" name="code" required>
+          </div>
+          <div class="form-group">
+            <label for="department-parent">上级部门</label>
+            <select class="form-control" id="department-parent" name="parent_id">
+              <option value="">无</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="department-description">部门描述</label>
+            <textarea class="form-control" id="department-description" name="description" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="department-sort">排序</label>
+            <input type="number" class="form-control" id="department-sort" name="sort_order" value="0">
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="department-status" name="status" checked>
+              <label class="custom-control-label" for="department-status">启用</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="btn-save-department">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 职位表单模态框 -->
+<div class="modal fade" id="position-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="position-modal-title">添加职位</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="position-form">
+          <input type="hidden" id="position-id">
+          <input type="hidden" id="position-org-id" name="org_id">
+          <div class="form-group">
+            <label for="position-name">职位名称</label>
+            <input type="text" class="form-control" id="position-name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="position-code">职位编码</label>
+            <input type="text" class="form-control" id="position-code" name="code" required>
+          </div>
+          <div class="form-group">
+            <label for="position-level">职级</label>
+            <input type="number" class="form-control" id="position-level" name="level" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label for="position-description">职位描述</label>
+            <textarea class="form-control" id="position-description" name="description" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="position-sort">排序</label>
+            <input type="number" class="form-control" id="position-sort" name="sort_order" value="0">
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="position-status" name="status" checked>
+              <label class="custom-control-label" for="position-status">启用</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="btn-save-position">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 员工表单模态框 -->
+<div class="modal fade" id="employee-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="employee-modal-title">添加员工</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="employee-form">
+          <input type="hidden" id="employee-id">
+          <input type="hidden" id="employee-org-id" name="org_id">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="employee-name">姓名</label>
+              <input type="text" class="form-control" id="employee-name" name="name" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="employee-id-input">工号</label>
+              <input type="text" class="form-control" id="employee-id-input" name="employee_id" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="employee-department">所属部门</label>
+              <select class="form-control" id="employee-department" name="department_id" required>
+                <option value="">请选择部门</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="employee-position">职位</label>
+              <select class="form-control" id="employee-position" name="position_id" required>
+                <option value="">请选择职位</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="employee-email">邮箱</label>
+              <input type="email" class="form-control" id="employee-email" name="email">
+            </div>
+            <div class="form-group col-md-6">
+              <label for="employee-phone">手机号</label>
+              <input type="text" class="form-control" id="employee-phone" name="phone">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="employee-gender">性别</label>
+              <select class="form-control" id="employee-gender" name="gender">
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="未知">未知</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="employee-entry-date">入职日期</label>
+              <input type="date" class="form-control" id="employee-entry-date" name="entry_date">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="employee-status">状态</label>
+              <select class="form-control" id="employee-status" name="status">
+                <option value="在职">在职</option>
+                <option value="离职">离职</option>
+                <option value="试用期">试用期</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="employee-job-title">职称</label>
+              <input type="text" class="form-control" id="employee-job-title" name="job_title">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="employee-work-place">工作地点</label>
+            <input type="text" class="form-control" id="employee-work-place" name="work_place">
+          </div>
+          <div class="form-group">
+            <label for="employee-user">关联用户账号</label>
+            <select class="form-control" id="employee-user" name="user_id">
+              <option value="">不关联用户账号</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="employee-avatar">头像</label>
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="employee-avatar" name="avatar">
+              <label class="custom-file-label" for="employee-avatar">选择文件</label>
+            </div>
+            <div id="employee-avatar-preview" class="mt-2"></div>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="employee-is-leader" name="is_leader">
+              <label class="custom-control-label" for="employee-is-leader">部门负责人</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="btn-save-employee">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 添加必要的JavaScript库 -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+
+<!-- 组织结构管理的JavaScript代码 -->
+<script>
+$(function() {
+  // 当前选中的组织ID
+  let currentOrgId = null;
+  
+  // 初始化页面
+  initPage();
+  
+  // 绑定事件
+  bindEvents();
+  
+  /**
+   * 初始化页面
+   */
+  function initPage() {
+    // 加载组织树
+    loadOrgTree();
+  }
+  
+  /**
+   * 绑定事件
+   */
+  function bindEvents() {
+    // 添加组织按钮点击事件
+    $('#btn-add-org').click(function() {
+      showOrgModal();
+    });
+    
+    // 保存组织按钮点击事件
+    $('#btn-save-org').click(function() {
+      saveOrg();
+    });
+    
+    // 添加部门按钮点击事件
+    $(document).on('click', '#btn-add-department', function() {
+      showDepartmentModal();
+    });
+    
+    // 保存部门按钮点击事件
+    $('#btn-save-department').click(function() {
+      saveDepartment();
+    });
+    
+    // 添加职位按钮点击事件
+    $(document).on('click', '#btn-add-position', function() {
+      showPositionModal();
+    });
+    
+    // 保存职位按钮点击事件
+    $('#btn-save-position').click(function() {
+      savePosition();
+    });
+    
+    // 添加员工按钮点击事件
+    $(document).on('click', '#btn-add-employee', function() {
+      showEmployeeModal();
+    });
+    
+    // 保存员工按钮点击事件
+    $('#btn-save-employee').click(function() {
+      saveEmployee();
+    });
+    
+    // 切换标签页事件
+    $('#org-tabs a').on('shown.bs.tab', function(e) {
+      const tabId = $(e.target).attr('href');
+      
+      if (tabId === '#departments') {
+        loadDepartments();
+      } else if (tabId === '#positions') {
+        loadPositions();
+      } else if (tabId === '#employees') {
+        loadEmployees();
+      }
+    });
+  }
+  
+  /**
+   * 显示组织模态框
+   * @param {string} orgId 组织ID，为空则表示添加
+   */
+  function showOrgModal(orgId) {
+    // 重置表单
+    $('#org-form')[0].reset();
+    $('#org-id').val('');
+    
+    if (orgId) {
+      // 编辑模式
+      $('#org-modal-title').text('编辑组织');
+      
+      // 加载组织数据
+      $.ajax({
+        url: '/api/org/' + orgId,
+        type: 'GET',
+        dataType: 'json',
+        success: function(res) {
+          if (res.status === 'success') {
+            const org = res.data;
+            
+            $('#org-id').val(org._id);
+            $('#org-name').val(org.name);
+            $('#org-code').val(org.code);
+            $('#org-type').val(org.type);
+            $('#org-parent').val(org.parent_id || '');
+            $('#org-description').val(org.description);
+            $('#org-contact').val(org.contact);
+            $('#org-phone').val(org.phone);
+            $('#org-email').val(org.email);
+            $('#org-sort').val(org.sort_order);
+            $('#org-address').val(org.address);
+            $('#org-status').prop('checked', org.status);
+            
+            if (org.logo) {
+              $('#org-logo-preview').html('<img src="' + org.logo + '" class="img-thumbnail" style="max-width: 200px;">');
+            }
+          } else {
+            toastr.error(res.message || '加载组织失败');
+          }
+        },
+        error: function(xhr) {
+          console.error('Error:', xhr.responseText);
+          toastr.error('加载组织失败: ' + (xhr.responseJSON ? xhr.responseJSON.message : '未知错误'));
+        }
+      });
+    } else {
+      // 添加模式
+      $('#org-modal-title').text('添加组织');
+      
+      // 如果有当前选中的组织，则设置为上级组织
+      if (currentOrgId) {
+        $('#org-parent').val(currentOrgId);
+      }
+    }
+    
+    // 加载组织列表作为上级组织选项
+    loadOrgOptions();
+    
+    // 显示模态框
+    $('#org-modal').modal('show');
+  }
+  
+  /**
+   * 加载组织树
+   */
+  function loadOrgTree() {
+    $.ajax({
+      url: '/api/org/list',
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res.status === 'success') {
+          renderOrgTree(res.data);
+        } else {
+          toastr.error(res.message || '加载组织失败');
+        }
+      },
+      error: function() {
+        toastr.error('加载组织失败');
+      }
+    });
+  }
+  
+  /**
+   * 渲染组织树
+   * @param {Array} data 组织数据
+   */
+  function renderOrgTree(data) {
+    const $tree = $('#org-tree');
+    $tree.empty();
+    
+    if (data.length === 0) {
+      $tree.html('<div class="text-center py-3"><p class="text-muted">暂无组织数据</p></div>');
+      return;
+    }
+    
+    const $ul = $('<ul class="tree"></ul>');
+    
+    data.forEach(function(org) {
+      const $li = renderOrgTreeNode(org);
+      $ul.append($li);
+    });
+    
+    $tree.append($ul);
+    
+    // 绑定组织点击事件
+    $('.org-node').click(function() {
+      const orgId = $(this).data('id');
+      selectOrg(orgId);
+    });
+  }
+  
+  /**
+   * 渲染组织树节点
+   * @param {Object} org 组织数据
+   * @returns {jQuery} 节点元素
+   */
+  function renderOrgTreeNode(org) {
+    const $li = $('<li></li>');
+    const $node = $('<div class="org-node" data-id="' + org._id + '"></div>');
+    $node.append('<i class="fas fa-building mr-2"></i>');
+    $node.append('<span>' + org.name + '</span>');
+    $li.append($node);
+    
+    if (org.children && org.children.length > 0) {
+      const $childUl = $('<ul></ul>');
+      
+      org.children.forEach(function(child) {
+        const $childLi = renderOrgTreeNode(child);
+        $childUl.append($childLi);
+      });
+      
+      $li.append($childUl);
+    }
+    
+    return $li;
+  }
+  
+  /**
+   * 加载组织选项
+   */
+  function loadOrgOptions() {
+    $.ajax({
+      url: '/api/org/list',
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res.status === 'success') {
+          const $select = $('#org-parent');
+          $select.find('option:not(:first)').remove();
+          
+          // 递归添加选项
+          function addOptions(orgs, level) {
+            orgs.forEach(function(org) {
+              const prefix = '　'.repeat(level);
+              $select.append('<option value="' + org._id + '">' + prefix + org.name + '</option>');
+              
+              if (org.children && org.children.length > 0) {
+                addOptions(org.children, level + 1);
+              }
+            });
+          }
+          
+          addOptions(res.data, 0);
+        }
+      }
+    });
+  }
+  
+  /**
+   * 保存组织
+   */
+  function saveOrg() {
+    const formData = {};
+    $('#org-form').serializeArray().forEach(function(item) {
+      formData[item.name] = item.value;
+    });
+    
+    // 处理复选框
+    formData.status = $('#org-status').prop('checked');
+    
+    const orgId = $('#org-id').val();
+    const url = orgId ? '/api/org/' + orgId : '/api/org/create';
+    const method = orgId ? 'PUT' : 'POST';
+    
+    $.ajax({
+      url: url,
+      type: method,
+      contentType: 'application/json',
+      data: JSON.stringify(formData),
+      success: function(res) {
+        if (res.status === 'success') {
+          $('#org-modal').modal('hide');
+          toastr.success('保存成功');
+          loadOrgTree();
+        } else {
+          toastr.error(res.message || '保存失败');
+        }
+      },
+      error: function(xhr) {
+        console.error('Error:', xhr.responseText);
+        toastr.error('保存失败: ' + (xhr.responseJSON ? xhr.responseJSON.message : '未知错误'));
+      }
+    });
+  }
+  
+  /**
+   * 选中组织
+   * @param {string} orgId 组织ID
+   */
+  function selectOrg(orgId) {
+    if (!orgId) {
+      console.error('组织ID不能为空');
+      toastr.error('组织ID不能为空');
+      return;
+    }
+    
+    console.log('选中组织:', orgId);
+    
+    // 更新当前选中的组织ID
+    currentOrgId = orgId;
+    
+    // 更新UI选中状态
+    $('.org-node').removeClass('active');
+    $('.org-node[data-id="' + orgId + '"]').addClass('active');
+    
+    // 显示组织详情
+    $.ajax({
+      url: '/api/org/' + orgId,
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res.status === 'success') {
+          const org = res.data;
+          
+          // 创建组织详情HTML
+          const detailHtml = `
+            <div id="org-detail">
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>${org.name}</h4>
+                  <p class="text-muted">${org.code || '-'}</p>
+                </div>
+                <div class="col-md-6 text-right">
+                  <button class="btn btn-sm btn-outline-primary mr-1" onclick="showOrgModal('${org._id}')"><i class="fas fa-edit"></i> 编辑</button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="deleteOrg('${org._id}')"><i class="fas fa-trash"></i> 删除</button>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>类型：</strong> <span>${org.type || '-'}</span></p>
+                  <p><strong>描述：</strong> <span>${org.description || '-'}</span></p>
+                  <p><strong>地址：</strong> <span>${org.address || '-'}</span></p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>联系人：</strong> <span>${org.contact || '-'}</span></p>
+                  <p><strong>电话：</strong> <span>${org.phone || '-'}</span></p>
+                  <p><strong>邮箱：</strong> <span>${org.email || '-'}</span></p>
+                  <p><strong>状态：</strong> <span class="badge ${org.status ? 'badge-success' : 'badge-danger'}">${org.status ? '正常' : '禁用'}</span></p>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // 更新组织详情容器
+          $('#org-detail-container').html(detailHtml);
+          
+          // 创建部门容器HTML
+          const departmentHtml = `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5>部门列表</h5>
+              <button class="btn btn-sm btn-primary" id="btn-add-department"><i class="fas fa-plus"></i> 添加部门</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover" id="departments-table">
+              </table>
+            </div>
+          `;
+          
+          // 更新部门容器
+          $('#department-container').html(departmentHtml);
+          
+          // 创建职位容器HTML
+          const positionHtml = `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5>职位列表</h5>
+              <button class="btn btn-sm btn-primary" id="btn-add-position"><i class="fas fa-plus"></i> 添加职位</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover" id="positions-table">
+              </table>
+            </div>
+          `;
+          
+          // 更新职位容器
+          $('#position-container').html(positionHtml);
+          
+          // 创建员工容器HTML
+          const employeeHtml = `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5>员工列表</h5>
+              <button class="btn btn-sm btn-primary" id="btn-add-employee"><i class="fas fa-plus"></i> 添加员工</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover" id="employees-table">
+              </table>
+            </div>
+          `;
+          
+          // 更新员工容器
+          $('#employee-container').html(employeeHtml);
+          
+          // 加载部门数据
+          loadDepartments();
+          
+          // 激活部门标签页
+          $('#org-tabs a[href="#departments"]').tab('show');
+        } else {
+          toastr.error(res.message || '加载组织详情失败');
+        }
+      },
+      error: function(xhr) {
+        console.error('Error:', xhr.responseText);
+        toastr.error('加载组织详情失败: ' + (xhr.responseJSON ? xhr.responseJSON.message : '未知错误'));
+      }
+    });
+  }
+  
+  /**
+   * 加载部门数据
+   */
+  function loadDepartments() {
+    if (!currentOrgId) {
+      return;
+    }
+    
+    $.ajax({
+      url: '/api/org/' + currentOrgId + '/departments',
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res.status === 'success') {
+          renderDepartments(res.data);
+        } else {
+          toastr.error(res.message || '加载部门失败');
+        }
+      },
+      error: function() {
+        toastr.error('加载部门失败');
+      }
+    });
+  }
+  
+  /**
+   * 渲染部门列表
+   * @param {Array} departments 部门数据
+   */
+  function renderDepartments(departments) {
+    const $table = $('#departments-table');
+    $table.empty();
+    
+    if (departments.length === 0) {
+      $table.html('<div class="text-center py-3"><p class="text-muted">暂无部门数据</p></div>');
+      return;
+    }
+    
+    console.log('渲染部门数据:', departments);
+    
+    // 创建表头
+    const $thead = $('<thead class="thead-light"><tr><th>部门名称</th><th>部门编码</th><th>描述</th><th>状态</th><th>操作</th></tr></thead>');
+    $table.append($thead);
+    
+    const $tbody = $('<tbody></tbody>');
+    
+    departments.forEach(function(dept) {
+      const $tr = $('<tr></tr>');
+      $tr.append('<td>' + dept.name + '</td>');
+      $tr.append('<td>' + dept.code + '</td>');
+      $tr.append('<td>' + (dept.description || '-') + '</td>');
+      $tr.append('<td>' + (dept.status ? '正常' : '禁用') + '</td>');
+      $tr.append('<td><button class="btn btn-sm btn-outline-primary mr-1" onclick="editDepartment(\'' + dept._id + '\')">编辑</button><button class="btn btn-sm btn-outline-danger" onclick="deleteDepartment(\'' + dept._id + '\')">删除</button></td>');
+      
+      $tbody.append($tr);
+    });
+    
+    $table.append($tbody);
+  }
+  
+  /**
+   * 加载职位数据
+   */
+  function loadPositions() {
+    if (!currentOrgId) {
+      return;
+    }
+    
+    $.ajax({
+      url: '/api/org/' + currentOrgId + '/positions',
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res.status === 'success') {
+          renderPositions(res.data);
+        } else {
+          toastr.error(res.message || '加载职位失败');
+        }
+      },
+      error: function() {
+        toastr.error('加载职位失败');
+      }
+    });
+  }
+  
+  /**
+   * 渲染职位列表
+   * @param {Array} positions 职位数据
+   */
+  function renderPositions(positions) {
+    const $table = $('#positions-table');
+    $table.empty();
+    
+    if (positions.length === 0) {
+      $table.html('<div class="text-center py-3"><p class="text-muted">暂无职位数据</p></div>');
+      return;
+    }
+    
+    console.log('渲染职位数据:', positions);
+    
+    // 创建表头
+    const $thead = $('<thead class="thead-light"><tr><th>职位名称</th><th>职位编码</th><th>描述</th><th>职级</th><th>状态</th><th>操作</th></tr></thead>');
+    $table.append($thead);
+    
+    const $tbody = $('<tbody></tbody>');
+    
+    positions.forEach(function(pos) {
+      const $tr = $('<tr></tr>');
+      $tr.append('<td>' + pos.name + '</td>');
+      $tr.append('<td>' + pos.code + '</td>');
+      $tr.append('<td>' + (pos.description || '-') + '</td>');
+      $tr.append('<td>' + pos.level + '</td>');
+      $tr.append('<td>' + (pos.status ? '正常' : '禁用') + '</td>');
+      $tr.append('<td><button class="btn btn-sm btn-outline-primary mr-1" onclick="editPosition(\'' + pos._id + '\')">编辑</button><button class="btn btn-sm btn-outline-danger" onclick="deletePosition(\'' + pos._id + '\')">删除</button></td>');
+      
+      $tbody.append($tr);
+    });
+    
+    $table.append($tbody);
+  }
+  
+  /**
+   * 加载员工数据
+   */
+  function loadEmployees() {
+    if (!currentOrgId) {
+      return;
+    }
+    
+    $.ajax({
+      url: '/api/org/' + currentOrgId + '/employees',
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res.status === 'success') {
+          renderEmployees(res.data);
+        } else {
+          toastr.error(res.message || '加载员工失败');
+        }
+      },
+      error: function() {
+        toastr.error('加载员工失败');
+      }
+    });
+  }
+  
+  /**
+   * 渲染员工列表
+   * @param {Array} employees 员工数据
+   */
+  function renderEmployees(employees) {
+    const $table = $('#employees-table');
+    $table.empty();
+    
+    if (employees.length === 0) {
+      $table.html('<div class="text-center py-3"><p class="text-muted">暂无员工数据</p></div>');
+      return;
+    }
+    
+    console.log('渲染员工数据:', employees);
+    
+    // 创建表头
+    const $thead = $('<thead class="thead-light"><tr><th>姓名</th><th>工号</th><th>部门</th><th>职位</th><th>手机号</th><th>邮箱</th><th>状态</th><th>操作</th></tr></thead>');
+    $table.append($thead);
+    
+    const $tbody = $('<tbody></tbody>');
+    
+    employees.forEach(function(emp) {
+      const $tr = $('<tr></tr>');
+      $tr.append('<td>' + emp.name + '</td>');
+      $tr.append('<td>' + emp.employee_id + '</td>');
+      $tr.append('<td>' + (emp.department_name || '-') + '</td>');
+      $tr.append('<td>' + (emp.position_name || '-') + '</td>');
+      $tr.append('<td>' + (emp.phone || '-') + '</td>');
+      $tr.append('<td>' + (emp.email || '-') + '</td>');
+      $tr.append('<td>' + emp.status + '</td>');
+      $tr.append('<td><button class="btn btn-sm btn-outline-primary mr-1" onclick="editEmployee(\'' + emp._id + '\')">编辑</button><button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(\'' + emp._id + '\')">删除</button></td>');
+      
+      $tbody.append($tr);
+    });
+    
+    $table.append($tbody);
+  }
+  
+  // 其他功能实现...
+});
+</script>
