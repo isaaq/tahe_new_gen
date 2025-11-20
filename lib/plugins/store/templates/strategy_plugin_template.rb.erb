@@ -27,14 +27,7 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          <%= @perform_logic %>
-          
-          # 返回结果
-          {
-            success: true,
-            <%= @result_fields %>
-            message: "<%= @success_message %>"
-          }
+<%= indent_code(@perform_logic, 10) %>
         end
         
         def after_execute(params = {}, result = nil)

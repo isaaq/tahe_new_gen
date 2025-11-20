@@ -23,18 +23,25 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 基于时间的权限过滤
+          current_time = Time.now
+          resource = params[:resource] || {}
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          # 检查时间窗口配置
+          time_window = params[:time_window] || resource[:time_window] || {}
+          start_time = time_window[:start_time]
+          end_time = time_window[:end_time]
+
+          # 如果配置了时间窗口，检查当前时间是否在允许范围内
+          if start_time && end_time
+            allowed = current_time >= Time.parse(start_time) && current_time <= Time.parse(end_time)
+            unless allowed
+              return { success: false, message: "当前时间不在允许的访问时间窗口内" }
+            end
+          end
+
+          # 设置允许访问标志
+          @allowed = true
         end
         
         def after_execute(params = {}, result = nil)

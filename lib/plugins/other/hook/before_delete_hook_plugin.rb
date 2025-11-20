@@ -18,11 +18,7 @@ module Plugins
           data = context[:data] || {}
           options = context[:options] || {}
 
-          # 示例：策略性阻止
-if options[:protect]
-  raise "受保护的数据不可删除"
-end
-
+          # 在此实现钩子逻辑
 
           {
             success: true,

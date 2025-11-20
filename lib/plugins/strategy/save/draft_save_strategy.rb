@@ -24,8 +24,12 @@ module Plugins
           data = params[:data]
           collection = params[:collection] || 'drafts'
           
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+          
           # 使用 MongoDB 存储草稿数据
-          result = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].insert_one(data)
+          result = collection_obj.insert_one(data)
           
           # 返回结果
           {

@@ -23,18 +23,15 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 基于IP的权限过滤
+          user_ip = params[:user_ip] || params[:request]&.remote_ip
+          allowed_ips = params[:allowed_ips] || []
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          return { success: false, message: "IP地址未提供" } unless user_ip
+          return { success: false, message: "IP地址不在白名单中" } unless allowed_ips.empty? || allowed_ips.include?(user_ip)
+
+          # 设置允许访问标志
+          @allowed = true
         end
         
         def after_execute(params = {}, result = nil)

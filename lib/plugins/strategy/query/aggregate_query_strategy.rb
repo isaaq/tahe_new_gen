@@ -23,25 +23,20 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          query = params[:query] || {}
-collection = params[:collection] || 'documents'
+          # 聚合查询逻辑
+          pipeline = params[:pipeline] || []
+          collection = params[:collection] || 'documents'
 
-# 执行查询
-results = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].find(query).to_a
+          return { success: false, message: "聚合管道未指定" } if pipeline.empty?
 
-{
-  success: true,
-  data: results,
-  count: results.size
-}
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          # 执行聚合查询
+          results = collection_obj.aggregate(pipeline).to_a
+
+          { success: true, data: results, count: results.size }
         end
         
         def after_execute(params = {}, result = nil)

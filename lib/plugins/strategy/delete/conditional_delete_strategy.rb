@@ -29,18 +29,32 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 条件删除
+          document_id = params[:document_id]
+          collection = params[:collection] || 'documents'
+          conditions = params[:conditions] || {}
 
-          
-          # 返回结果
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+
+          # 构建查询条件
+          query = { _id: BSON::ObjectId(document_id) }.merge(conditions)
+
+          # 检查条件是否满足
+          document = collection_obj.find_one(query)
+          unless document
+            return { success: false, message: "文档不存在或条件不满足" }
+          end
+
+          # 删除文档
+          delete_result = collection_obj.delete_one(query)
+
           {
             success: true,
-            
-            message: "条件删除成功"
-          }
+            deleted_count: delete_result.deleted_count,
+            message: "文档已删除"
+                  }
         end
         
         def after_execute(params = {}, result = nil)

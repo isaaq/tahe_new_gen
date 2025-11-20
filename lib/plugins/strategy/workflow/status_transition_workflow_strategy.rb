@@ -29,18 +29,35 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 状态流转工作流逻辑
+          workflow_id = params[:workflow_id]
+          from_status = params[:from_status]
+          to_status = params[:to_status]
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          return { success: false, message: "目标状态未指定" } unless to_status
+
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+
+          # 更新工作流状态
+          update_result = db['workflows'].update_one(
+            { _id: BSON::ObjectId(workflow_id) },
+            { '$set' => {
+              status: to_status,
+              from_status: from_status,
+              status_transitioned_at: Time.now
+            } }
+          )
+
+          # 记录状态流转历史
+          db['workflow_status_history'].insert_one({
+            workflow_id: workflow_id,
+            from_status: from_status,
+            to_status: to_status,
+            transitioned_at: Time.now
+          })
+
+          { success: true, message: "状态已流转", from_status: from_status, to_status: to_status }
         end
         
         def after_execute(params = {}, result = nil)

@@ -29,18 +29,26 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 通知逻辑
+          recipient = params[:recipient]
+          message = params[:message] || {}
+          channel = params[:channel] || 'email'
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          return { success: false, message: "收件人未指定" } unless recipient
+
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+
+          # 发送通知
+          db['notification_logs'].insert_one({
+            type: channel,
+            recipient: recipient,
+            message: message,
+            sent_at: Time.now,
+            status: 'sent'
+          })
+
+          { success: true, message: "通知已发送", channel: channel }
         end
         
         def after_execute(params = {}, result = nil)

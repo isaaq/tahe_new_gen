@@ -23,25 +23,18 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
+          # 查询逻辑
           query = params[:query] || {}
-collection = params[:collection] || 'documents'
+          collection = params[:collection] || 'documents'
 
-# 执行查询
-results = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].find(query).to_a
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
 
-{
-  success: true,
-  data: results,
-  count: results.size
-}
+                  # 执行查询
+          results = collection_obj.find(query).to_a
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          { success: true, data: results, count: results.size }
         end
         
         def after_execute(params = {}, result = nil)

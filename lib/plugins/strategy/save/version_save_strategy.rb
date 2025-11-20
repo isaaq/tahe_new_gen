@@ -27,25 +27,27 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          data = params[:data]
-collection = params[:collection] || 'documents'
+          # 版本保存逻辑
+          data = params[:data] || {}
+          collection = params[:collection] || 'documents'
+          version = params[:version] || '1.0'
 
-# 使用 MongoDB 存储数据
-result = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].insert_one(data)
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
 
-{
-  success: true,
-  document_id: result.inserted_id.to_s,
-  message: "文档已保存"
-}
+          # 保存数据
+          result = collection_obj.insert_one(data)
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "文档版本已保存"
-          }
+          # 保存版本记录
+          db['document_versions'].insert_one({
+            document_id: result.inserted_id.to_s,
+            version: version.to_s,
+            data: data,
+            created_at: Time.now
+          })
+
+          { success: true, document_id: result.inserted_id.to_s, version: version, message: "文档已保存并创建版本" }
         end
         
         def after_execute(params = {}, result = nil)

@@ -27,18 +27,31 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 业务规则验证
+          data = params[:data] || {}
+          rules = params[:rules] || []
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          errors = []
+
+          rules.each do |rule|
+            field = rule[:field]
+            condition = rule[:condition]
+            message = rule[:message] || "#{field} 不符合业务规则"
+
+            field_value = data[field.to_sym] || data[field.to_s]
+
+            if condition.respond_to?(:call)
+              unless condition.call(field_value, data)
+                errors << { field: field, message: message }
+              end
+            end
+          end
+
+          if errors.empty?
+            { success: true, valid: true }
+          else
+            { success: false, valid: false, errors: errors }
+          end
         end
         
         def after_execute(params = {}, result = nil)

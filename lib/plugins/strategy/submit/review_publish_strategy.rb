@@ -27,18 +27,28 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 审核发布逻辑
+          document_id = params[:document_id]
+          collection = params[:collection] || 'documents'
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "文档已提交审核"
-          }
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+
+          # 创建审核任务
+          db['review_tasks'].insert_one({
+            document_id: document_id,
+            status: 'pending',
+            created_at: Time.now
+          })
+
+          # 更新文档状态为待审核
+          update_result = collection_obj.update_one(
+            { _id: BSON::ObjectId(document_id) },
+            { '$set' => { status: 'pending_review', submitted_at: Time.now } }
+          )
+
+          { success: true, updated_count: update_result.modified_count, message: "文档已提交审核" }
         end
         
         def after_execute(params = {}, result = nil)

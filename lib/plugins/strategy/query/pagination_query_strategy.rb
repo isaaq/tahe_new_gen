@@ -23,25 +23,27 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
+          # 分页查询逻辑
           query = params[:query] || {}
-collection = params[:collection] || 'documents'
+          page = params[:page] || 1
+          page_size = params[:page_size] || params[:limit] || 20
+          collection = params[:collection] || 'documents'
 
-# 执行查询
-results = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].find(query).to_a
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
 
-{
-  success: true,
-  data: results,
-  count: results.size
-}
+          # 计算跳过的记录数
+          skip = (page.to_i - 1) * page_size.to_i
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          # 执行分页查询
+          total_count = collection_obj.count_documents(query)
+          results = collection_obj.find(query).skip(skip).limit(page_size.to_i).to_a
+
+          # 计算总页数
+          total_pages = (total_count.to_f / page_size.to_i).ceil
+
+          { success: true, data: results, count: results.size, total: total_count, page: page.to_i, page_size: page_size.to_i, total_pages: total_pages }
         end
         
         def after_execute(params = {}, result = nil)
