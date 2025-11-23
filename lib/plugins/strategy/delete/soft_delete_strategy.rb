@@ -27,17 +27,25 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 逻辑删除（软删除）
+          document_id = params[:document_id]
+          collection = params[:collection] || 'documents'
+          deleted_field = params[:deleted_field] || 'deleted_at'
 
-          
-          # 返回结果
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+
+          # 更新文档，标记为已删除
+          update_result = collection_obj.update_one(
+            { _id: BSON::ObjectId(document_id) },
+            { '$set' => { deleted_field.to_sym => Time.now } }
+          )
+
           {
             success: true,
-            
-            message: "文档已软删除"
+            updated_count: update_result.modified_count,
+            message: "文档已逻辑删除"
           }
         end
         

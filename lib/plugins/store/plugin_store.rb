@@ -72,7 +72,12 @@ class PluginStore
   
   # 安装插件
   def install_plugin(plugin_id, version = 'latest')
-    plugin = get_plugin(plugin_id, version)
+    # 如果version是'latest'，不指定version查询最新版本
+    if version == 'latest'
+      plugin = get_plugin(plugin_id, nil)
+    else
+      plugin = get_plugin(plugin_id, version)
+    end
     return { success: false, error: 'Plugin not found' } unless plugin
     
     # 检查是否已安装

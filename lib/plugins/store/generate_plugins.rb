@@ -103,11 +103,25 @@ class GeneratePlugins
     end
     puts
     
-    # 7. 生成插件元数据并注册到商店
-    puts "步骤7: 生成插件元数据并注册到商店..."
+    # 7. 生成数据源插件
+    puts "步骤7: 生成数据源插件..."
+    data_source_configs = BatchPluginGenerator.create_data_source_plugin_configs
+    data_source_results = generator.generate_plugins(data_source_configs)
+    success_count = data_source_results[:code_generation].count { |r| r[:success] }
+    puts "✅ 生成了 #{success_count}/#{data_source_configs.size} 个数据源插件"
+    if success_count < data_source_configs.size
+      puts "⚠️  失败的插件："
+      data_source_results[:code_generation].each do |r|
+        puts "  - #{r[:plugin_id]}: #{r[:error]}" unless r[:success]
+      end
+    end
+    puts
+    
+    # 8. 生成插件元数据并注册到商店
+    puts "步骤8: 生成插件元数据并注册到商店..."
     store = PluginStore.instance
     
-    all_configs = strategy_configs + field_type_configs + form_behavior_configs + ui_component_configs + hook_configs + ai_prompt_configs
+    all_configs = strategy_configs + field_type_configs + form_behavior_configs + ui_component_configs + hook_configs + ai_prompt_configs + data_source_configs
     metadata_count = 0
     
     all_configs.each do |config|
@@ -159,9 +173,9 @@ class GeneratePlugins
     puts "✅ 已生成并注册 #{metadata_count} 个插件的元数据"
     puts
     
-    # 8. 生成测试用例
-    puts "步骤8: 生成测试用例..."
-    all_configs = strategy_configs + field_type_configs + form_behavior_configs + ui_component_configs + hook_configs + ai_prompt_configs
+    # 9. 生成测试用例
+    puts "步骤9: 生成测试用例..."
+    all_configs = strategy_configs + field_type_configs + form_behavior_configs + ui_component_configs + hook_configs + ai_prompt_configs + data_source_configs
     test_dir = File.join(File.dirname(__FILE__), '..', '..', '..', 'test', 'plugins')
     FileUtils.mkdir_p(test_dir)
     
@@ -173,8 +187,8 @@ class GeneratePlugins
     puts "✅ 生成了 #{all_configs.size} 个测试文件"
     puts
     
-    # 9. 生成文档
-    puts "步骤9: 生成插件文档..."
+    # 10. 生成文档
+    puts "步骤10: 生成插件文档..."
     doc_dir = File.join(File.dirname(__FILE__), '..', '..', '..', 'docs', 'plugins')
     FileUtils.mkdir_p(doc_dir)
     
@@ -212,6 +226,7 @@ class GeneratePlugins
     puts "  - UI组件插件: #{ui_component_configs.size} 个"
     puts "  - 操作钩子插件: #{hook_configs.size} 个"
     puts "  - AI Prompt插件: #{ai_prompt_configs.size} 个"
+    puts "  - 数据源插件: #{data_source_configs.size} 个"
     puts "  - 测试文件: #{all_configs.size} 个"
     puts "  - 文档文件: #{all_configs.size} 个"
   end

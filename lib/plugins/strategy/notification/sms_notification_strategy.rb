@@ -29,18 +29,33 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
-
           
-          # 返回结果
-          {
-            success: true,
+          # 短信通知逻辑
+          recipient = params[:recipient] || params[:phone]
+          content = params[:content] || params[:message]&.dig(:content) || params[:message] || ''
+
+          return { success: false, message: "收件人未指定" } unless recipient
+
+          # 发送短信
+          begin
+            # 这里可以集成实际的短信服务，如阿里云、腾讯云等
+            # 示例：SmsClient.send(recipient, content)
             
-            message: "操作成功"
-          }
+            # 记录发送日志
+            db = Common::M.database
+            db['notification_logs'].insert_one({
+              type: 'sms',
+              recipient: recipient,
+              content: content,
+              sent_at: Time.now,
+              status: 'sent'
+            })
+            
+            { success: true, message: "短信已发送", recipient: recipient }
+          rescue => e
+            { success: false, message: "短信发送失败: #{e.message}" }
+          end
+          
         end
         
         def after_execute(params = {}, result = nil)

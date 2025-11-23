@@ -29,25 +29,18 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          data = params[:data]
-collection = params[:collection] || 'documents'
+          # 保存逻辑
+          data = params[:data] || {}
+          collection = params[:collection] || 'documents'
 
-# 使用 MongoDB 存储数据
-result = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].insert_one(data)
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
 
-{
-  success: true,
-  document_id: result.inserted_id.to_s,
-  message: "文档已保存"
-}
+          # 保存数据
+          result = collection_obj.insert_one(data)
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "文档增量更新成功"
-          }
+          { success: true, document_id: result.inserted_id.to_s, message: "文档已保存" }
         end
         
         def after_execute(params = {}, result = nil)

@@ -27,18 +27,24 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 自动触发工作流逻辑
+          trigger_condition = params[:trigger_condition] || {}
+          workflow_template = params[:workflow_template]
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          return { success: false, message: "工作流模板未指定" } unless workflow_template
+
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+
+          # 创建新的工作流实例
+          new_workflow = db['workflows'].insert_one({
+            template: workflow_template,
+            trigger_condition: trigger_condition,
+            status: 'active',
+            created_at: Time.now
+          })
+
+          { success: true, message: "工作流已自动触发", workflow_id: new_workflow.inserted_id.to_s }
         end
         
         def after_execute(params = {}, result = nil)

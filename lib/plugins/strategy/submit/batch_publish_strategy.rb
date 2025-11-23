@@ -27,18 +27,24 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 批量发布逻辑
+          document_ids = params[:document_ids] || []
+          collection = params[:collection] || 'documents'
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "批量发布成功"
-          }
+          return { success: false, message: "文档ID列表为空" } if document_ids.empty?
+
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+
+          # 批量更新文档状态
+          object_ids = document_ids.map { |id| BSON::ObjectId(id) }
+          update_result = collection_obj.update_many(
+            { _id: { '$in' => object_ids } },
+            { '$set' => { status: 'submitted', submitted_at: Time.now, batch_submitted: true } }
+          )
+
+          { success: true, updated_count: update_result.modified_count, total: document_ids.size, message: "批量发布成功" }
         end
         
         def after_execute(params = {}, result = nil)

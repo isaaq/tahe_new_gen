@@ -24,12 +24,16 @@ module Plugins
           data = params[:data]
           collection = params[:collection] || 'documents'
           
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+          
           # 使用 MongoDB 存储数据
           if data[:_id]
             # 更新现有文档
             id = data.delete(:_id)
-            result = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].update_one(
-              { _id: BSON::ObjectId.from_string(id.to_s) },
+            result = collection_obj.update_one(
+              { _id: BSON::ObjectId(id) },
               { "$set" => data }
             )
             
@@ -40,7 +44,7 @@ module Plugins
             }
           else
             # 创建新文档
-            result = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')[collection].insert_one(data)
+            result = collection_obj.insert_one(data)
             
             {
               success: true,

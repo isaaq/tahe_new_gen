@@ -18,9 +18,7 @@ module Plugins
           data = context[:data] || {}
           options = context[:options] || {}
 
-          # 示例：打审计标记
-data['_deleted'] = true
-
+          # 在此实现钩子逻辑
 
           {
             success: true,

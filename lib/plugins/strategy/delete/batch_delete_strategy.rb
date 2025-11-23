@@ -27,17 +27,21 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 删除逻辑
+          document_id = params[:document_id]
+          collection = params[:collection] || 'documents'
 
-          
-          # 返回结果
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+
+          # 删除文档
+          delete_result = collection_obj.delete_one({ _id: BSON::ObjectId(document_id) })
+
           {
             success: true,
-            
-            message: "批量删除成功"
+            deleted_count: delete_result.deleted_count,
+            message: "文档已删除"
           }
         end
         

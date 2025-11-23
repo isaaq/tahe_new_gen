@@ -23,18 +23,13 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 权限过滤逻辑
+          user = params[:user] || {}
+          resource = params[:resource] || {}
 
-          
-          # 返回结果
-          {
-            success: true,
-            
-            message: "操作成功"
-          }
+          # 实现具体的权限检查逻辑
+          # 默认允许访问
+          @allowed = true
         end
         
         def after_execute(params = {}, result = nil)

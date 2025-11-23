@@ -20,15 +20,18 @@ module Plugins
           document_id = params[:document_id]
           collection = params[:collection] || 'documents'
           
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+          
           # 获取文档
-          client = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')
-          document = client[collection].find({ _id: BSON::ObjectId.from_string(document_id.to_s) }).first
+          document = collection_obj.find_one({ _id: BSON::ObjectId(document_id) })
           
           raise "未找到文档: #{document_id}" unless document
           
           # 更新文档状态为已发布
-          result = client[collection].update_one(
-            { _id: BSON::ObjectId.from_string(document_id.to_s) },
+          result = collection_obj.update_one(
+            { _id: BSON::ObjectId(document_id) },
             { "$set" => { 
                 status: 'published', 
                 published_at: Time.now,

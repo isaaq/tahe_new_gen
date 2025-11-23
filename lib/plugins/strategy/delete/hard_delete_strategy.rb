@@ -27,17 +27,21 @@ module Plugins
         
         def perform(params = {})
           # 策略实现
-          # 实现具体的策略逻辑
-{
-  success: true
-}
+          # 物理删除（硬删除）
+          document_id = params[:document_id]
+          collection = params[:collection] || 'documents'
 
-          
-          # 返回结果
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          collection_obj = db[collection]
+
+          # 物理删除文档
+          delete_result = collection_obj.delete_one({ _id: BSON::ObjectId(document_id) })
+
           {
             success: true,
-            
-            message: "文档已永久删除"
+            deleted_count: delete_result.deleted_count,
+            message: "文档已物理删除"
           }
         end
         

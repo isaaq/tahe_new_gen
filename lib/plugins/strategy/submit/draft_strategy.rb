@@ -21,9 +21,11 @@ module Plugins
           draft_collection = params[:draft_collection] || 'drafts'
           target_collection = params[:target_collection] || 'documents'
           
+          # 获取 MongoDB 客户端
+          db = Common::M.database
+          
           # 从草稿集合中获取草稿
-          client = Mongo::Client.new(["localhost:27017"], database: 'kr_new_gen')
-          draft = client[draft_collection].find({ _id: BSON::ObjectId.from_string(draft_id.to_s) }).first
+          draft = db[draft_collection].find_one({ _id: BSON::ObjectId(draft_id) })
           
           raise "未找到草稿: #{draft_id}" unless draft
           
@@ -33,10 +35,10 @@ module Plugins
           draft['_submitted_at'] = Time.now
           
           # 保存到目标集合
-          result = client[target_collection].insert_one(draft)
+          result = db[target_collection].insert_one(draft)
           
           # 删除原草稿
-          client[draft_collection].delete_one({ _id: BSON::ObjectId.from_string(draft_id.to_s) })
+          db[draft_collection].delete_one({ _id: BSON::ObjectId(draft_id) })
           
           {
             success: true,
