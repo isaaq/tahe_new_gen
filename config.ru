@@ -27,6 +27,7 @@ require_relative './api/service/employee_controller'
 require_relative './api/service/employee_full_controller'
 require_relative './api/service/ai_generator_controller'
 require_relative './api/service/plugin_store_controller'
+require_relative './api/service/scroll_store_controller'
 
 # 初始化插件商店（在系统完全加载后）
 begin
@@ -66,3 +67,4 @@ map('/emp') { run EmployeeController }
 map('/full') { run EmployeeFullController }
 map('/ai') { run AiGeneratorController }
 map('/plugin-store') { run PluginStoreController }
+map('/scroll-store') { run ScrollStoreController }

@@ -3,6 +3,7 @@ require_relative '../../lib/util/jwt_auth'
 require_relative '../routes/query_routes'
 require_relative '../routes/kr_tag_generation_routes'
 require_relative '../routes/plugin_store_routes'
+require_relative '../routes/scroll_store_routes'
 
 class ApiController < Sinatra::Base
   # puts "=== Loading ApiController ==="
@@ -48,6 +49,7 @@ class ApiController < Sinatra::Base
   register QueryRoutes
   register KrTagGenerationRoutes
   register PluginStoreRoutes
+  register ScrollStoreRoutes
 
   after do
     _routes
