@@ -1,0 +1,319 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tahe.dev/schemas/ui/component_dsl.json",
+  "title": "Tahe Component DSL Schema",
+  "description": "Schema for component-based UI DSL (product_management.krdsl style)",
+  "type": "object",
+  "required": ["page"],
+  "properties": {
+    "page": {
+      "type": "string",
+      "description": "页面标题",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "layout": {
+      "type": "string",
+      "description": "页面布局",
+      "enum": ["admin", "default", "blank", "fluid"]
+    },
+    "theme": {
+      "type": "string",
+      "description": "页面主题",
+      "enum": ["default", "dark", "light"]
+    },
+    "model": {
+      "type": "string",
+      "description": "关联的模型名称（可选，引用 .krmodel 文件）",
+      "pattern": "^[A-Z][a-zA-Z0-9]*$"
+    },
+    "components": {
+      "type": "array",
+      "description": "页面组件列表",
+      "items": {
+        "$ref": "#/definitions/component"
+      }
+    }
+  },
+  "definitions": {
+    "component": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "组件类型",
+          "enum": [
+            "tree_table_layout",
+            "search_table",
+            "crud_panel",
+            "form",
+            "table",
+            "chart",
+            "card",
+            "tabs",
+            "toolbar"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "description": "组件配置，根据组件类型不同而不同",
+          "oneOf": [
+            {"$ref": "#/definitions/tree_table_layout_config"},
+            {"$ref": "#/definitions/search_table_config"},
+            {"$ref": "#/definitions/crud_panel_config"},
+            {"$ref": "#/definitions/form_config"}
+          ]
+        }
+      }
+    },
+    "tree_table_layout_config": {
+      "type": "object",
+      "required": ["tree_source", "table_source", "columns"],
+      "properties": {
+        "tree_title": {"type": "string"},
+        "table_title": {"type": "string"},
+        "tree_source": {
+          "type": "string",
+          "format": "uri-reference",
+          "description": "树数据源API"
+        },
+        "table_source": {
+          "type": "string",
+          "format": "uri-reference",
+          "description": "表格数据源API"
+        },
+        "columns": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/table_column"}
+        }
+      }
+    },
+    "search_table_config": {
+      "type": "object",
+      "required": ["table_source", "columns"],
+      "properties": {
+        "table_title": {"type": "string"},
+        "table_source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "search_fields": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/search_field"}
+        },
+        "columns": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/table_column"}
+        }
+      }
+    },
+    "crud_panel_config": {
+      "type": "object",
+      "required": ["api_base", "columns"],
+      "properties": {
+        "title": {"type": "string"},
+        "api_base": {
+          "type": "string",
+          "format": "uri-reference",
+          "description": "CRUD API基础路径"
+        },
+        "columns": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/table_column"}
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["create", "edit", "delete", "view", "export", "import"]
+          }
+        }
+      }
+    },
+    "form_config": {
+      "type": "object",
+      "required": ["action", "fields"],
+      "properties": {
+        "title": {"type": "string"},
+        "action": {
+          "type": "string",
+          "format": "uri-reference",
+          "description": "表单提交API"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["POST", "PUT", "PATCH"],
+          "default": "POST"
+        },
+        "fields": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/form_field"}
+        }
+      }
+    },
+    "table_column": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "字段名",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "title": {
+          "type": "string",
+          "description": "列标题"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 1000
+        },
+        "sort": {
+          "type": "boolean",
+          "description": "是否可排序"
+        },
+        "fixed": {
+          "type": "string",
+          "enum": ["left", "right"],
+          "description": "固定列位置"
+        },
+        "edit": {
+          "type": "string",
+          "description": "行内编辑类型",
+          "enum": ["text", "number", "select", "date"]
+        },
+        "toolbar": {
+          "type": "string",
+          "description": "工具栏模板ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["checkbox", "radio", "numbers"],
+          "description": "特殊列类型"
+        }
+      }
+    },
+    "search_field": {
+      "type": "object",
+      "required": ["type", "name", "label"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["input", "select", "date", "date_range", "number", "number_range"]
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "label": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "description": "select类型的选项",
+          "items": {
+            "type": "object",
+            "required": ["value", "text"],
+            "properties": {
+              "value": {"type": ["string", "number"]},
+              "text": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "form_field": {
+      "type": "object",
+      "required": ["type", "name", "label"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "字段类型",
+          "enum": [
+            "input", "textarea", "select", "checkbox", "radio", "switch",
+            "date", "date_range", "time", "datetime",
+            "number", "number_range",
+            "file", "image", "editor",
+            "single_relation", "multiple_relation"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "label": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "readonly": {
+          "type": "boolean",
+          "default": false
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "default_value": {
+          "description": "默认值"
+        },
+        "validation": {
+          "$ref": "#/definitions/field_validation"
+        },
+        "options": {
+          "type": "array",
+          "description": "select/checkbox/radio的选项",
+          "items": {
+            "type": "object",
+            "required": ["value", "text"],
+            "properties": {
+              "value": {},
+              "text": {"type": "string"}
+            }
+          }
+        },
+        "input_type": {
+          "type": "string",
+          "description": "input类型的HTML type属性",
+          "enum": ["text", "number", "email", "tel", "url", "password"]
+        },
+        "rows": {
+          "type": "integer",
+          "description": "textarea的行数",
+          "minimum": 1,
+          "maximum": 50
+        }
+      }
+    },
+    "field_validation": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "number",
+          "description": "最小值（数字）或最小长度（字符串）"
+        },
+        "max": {
+          "type": "number",
+          "description": "最大值（数字）或最大长度（字符串）"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "正则表达式"
+        },
+        "custom": {
+          "type": "string",
+          "description": "自定义验证函数名"
+        }
+      }
+    }
+  }
+}

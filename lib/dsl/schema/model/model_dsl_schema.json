@@ -1,0 +1,473 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tahe.dev/schemas/model/model_dsl.json",
+  "title": "Tahe Model DSL Schema",
+  "description": "Schema for model definition DSL (.krmodel files) - AI-friendly layer",
+  "type": "object",
+  "required": ["model", "fields"],
+  "properties": {
+    "model": {
+      "type": "string",
+      "description": "模型名称（PascalCase）",
+      "pattern": "^[A-Z][a-zA-Z0-9]*$",
+      "examples": ["Product", "Order", "Customer"]
+    },
+    "collection": {
+      "type": "string",
+      "description": "MongoDB集合名称（默认为模型名的复数小写）",
+      "pattern": "^[a-z_][a-z0-9_]*$"
+    },
+    "description": {
+      "type": "string",
+      "description": "模型描述",
+      "maxLength": 500
+    },
+    "timestamps": {
+      "type": "boolean",
+      "description": "是否自动添加created_at和updated_at字段",
+      "default": true
+    },
+    "soft_delete": {
+      "type": "boolean",
+      "description": "是否启用软删除（添加deleted_at字段）",
+      "default": false
+    },
+    "fields": {
+      "type": "array",
+      "description": "字段定义列表",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/field_definition"
+      }
+    },
+    "indexes": {
+      "type": "array",
+      "description": "索引定义",
+      "items": {
+        "$ref": "#/definitions/index_definition"
+      }
+    },
+    "strategies": {
+      "type": "array",
+      "description": "策略配置",
+      "items": {
+        "$ref": "#/definitions/strategy_definition"
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "description": "生命周期钩子",
+      "properties": {
+        "before_create": {"type": "string"},
+        "after_create": {"type": "string"},
+        "before_save": {"type": "string"},
+        "after_save": {"type": "string"},
+        "before_update": {"type": "string"},
+        "after_update": {"type": "string"},
+        "before_delete": {"type": "string"},
+        "after_delete": {"type": "string"},
+        "before_query": {"type": "string"},
+        "after_query": {"type": "string"}
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "description": "权限配置",
+      "properties": {
+        "create": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "允许创建的角色"
+        },
+        "read": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "允许读取的角色"
+        },
+        "update": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "允许更新的角色"
+        },
+        "delete": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "允许删除的角色"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "field_definition": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "字段名称（snake_case）",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "type": {
+          "type": "string",
+          "description": "字段类型",
+          "enum": [
+            "text", "textarea", "number", "boolean", "date", "time", "datetime",
+            "enum", "file", "image", "json",
+            "amount", "email", "phone", "id_card", "url",
+            "address", "coordinate", "color",
+            "number_range", "date_range",
+            "single_relation", "multiple_relation", "tree_relation",
+            "code_editor", "markdown", "rich_text",
+            "encrypted", "formula"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "description": "字段显示标签"
+        },
+        "description": {
+          "type": "string",
+          "description": "字段描述"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "是否必填",
+          "default": false
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "是否唯一",
+          "default": false
+        },
+        "default": {
+          "description": "默认值"
+        },
+        "validation": {
+          "$ref": "#/definitions/validation_rules"
+        },
+        "options": {
+          "description": "字段特定选项（根据类型不同）",
+          "type": "object",
+          "properties": {
+            "enum_values": {
+              "type": "array",
+              "description": "枚举类型的可选值",
+              "items": {
+                "type": "object",
+                "required": ["value", "label"],
+                "properties": {
+                  "value": {},
+                  "label": {"type": "string"}
+                }
+              }
+            },
+            "target": {
+              "type": "string",
+              "description": "关联字段的目标模型",
+              "pattern": "^[A-Z][a-zA-Z0-9]*$"
+            },
+            "foreign_key": {
+              "type": "string",
+              "description": "外键字段名",
+              "pattern": "^[a-z_][a-z0-9_]*$"
+            },
+            "display_field": {
+              "type": "string",
+              "description": "关联模型的显示字段"
+            },
+            "cascade_delete": {
+              "type": "boolean",
+              "description": "是否级联删除",
+              "default": false
+            },
+            "min": {
+              "type": "number",
+              "description": "最小值（数字类型）"
+            },
+            "max": {
+              "type": "number",
+              "description": "最大值（数字类型）"
+            },
+            "precision": {
+              "type": "integer",
+              "description": "小数精度（金额类型）",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "currency": {
+              "type": "string",
+              "description": "货币类型",
+              "enum": ["CNY", "USD", "EUR", "GBP", "JPY"]
+            },
+            "language": {
+              "type": "string",
+              "description": "代码编辑器语言",
+              "enum": ["javascript", "python", "ruby", "sql", "json", "yaml", "html", "css"]
+            },
+            "formula": {
+              "type": "string",
+              "description": "计算公式"
+            },
+            "searchable": {
+              "type": "boolean",
+              "description": "是否可搜索",
+              "default": true
+            },
+            "sortable": {
+              "type": "boolean",
+              "description": "是否可排序",
+              "default": true
+            },
+            "filterable": {
+              "type": "boolean",
+              "description": "是否可过滤",
+              "default": true
+            }
+          }
+        },
+        "ui": {
+          "type": "object",
+          "description": "UI显示配置",
+          "properties": {
+            "hidden": {
+              "type": "boolean",
+              "description": "是否隐藏",
+              "default": false
+            },
+            "readonly": {
+              "type": "boolean",
+              "description": "是否只读",
+              "default": false
+            },
+            "width": {
+              "type": "string",
+              "description": "表单字段宽度",
+              "pattern": "^\\d+(%|px)$"
+            },
+            "placeholder": {
+              "type": "string",
+              "description": "占位符文本"
+            },
+            "help_text": {
+              "type": "string",
+              "description": "帮助文本"
+            },
+            "show_in_list": {
+              "type": "boolean",
+              "description": "是否在列表中显示",
+              "default": true
+            },
+            "show_in_form": {
+              "type": "boolean",
+              "description": "是否在表单中显示",
+              "default": true
+            },
+            "show_in_detail": {
+              "type": "boolean",
+              "description": "是否在详情中显示",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "validation_rules": {
+      "type": "object",
+      "description": "验证规则",
+      "properties": {
+        "min_length": {
+          "type": "integer",
+          "description": "最小长度（字符串）",
+          "minimum": 0
+        },
+        "max_length": {
+          "type": "integer",
+          "description": "最大长度（字符串）",
+          "minimum": 1
+        },
+        "min": {
+          "type": "number",
+          "description": "最小值（数字）"
+        },
+        "max": {
+          "type": "number",
+          "description": "最大值（数字）"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "正则表达式"
+        },
+        "format": {
+          "type": "string",
+          "description": "格式验证",
+          "enum": ["email", "url", "phone", "id_card", "ip", "mac", "uuid"]
+        },
+        "custom": {
+          "type": "string",
+          "description": "自定义验证函数名"
+        },
+        "message": {
+          "type": "string",
+          "description": "验证失败提示信息"
+        }
+      }
+    },
+    "index_definition": {
+      "type": "object",
+      "required": ["fields"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "索引名称"
+        },
+        "fields": {
+          "type": "array",
+          "description": "索引字段",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["field"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "pattern": "^[a-z_][a-z0-9_]*$"
+              },
+              "order": {
+                "type": "integer",
+                "enum": [1, -1],
+                "description": "排序方向：1升序，-1降序",
+                "default": 1
+              }
+            }
+          }
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "是否唯一索引",
+          "default": false
+        },
+        "sparse": {
+          "type": "boolean",
+          "description": "是否稀疏索引",
+          "default": false
+        }
+      }
+    },
+    "strategy_definition": {
+      "type": "object",
+      "required": ["action", "context"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "操作类型",
+          "enum": [
+            "save", "submit", "query", "delete", "validate",
+            "notification", "permission", "search", "workflow"
+          ]
+        },
+        "context": {
+          "type": "string",
+          "description": "执行上下文",
+          "examples": ["draft", "normal", "publish", "review", "paginated", "soft", "hard"]
+        },
+        "class": {
+          "type": "string",
+          "description": "策略类名（可选，默认根据domain/action/context自动解析）",
+          "pattern": "^[A-Z][a-zA-Z0-9:]*$"
+        },
+        "config": {
+          "type": "object",
+          "description": "策略配置参数",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "model": "Product",
+      "collection": "products",
+      "description": "产品模型",
+      "timestamps": true,
+      "soft_delete": true,
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "label": "产品名称",
+          "required": true,
+          "validation": {
+            "min_length": 2,
+            "max_length": 100
+          }
+        },
+        {
+          "name": "price",
+          "type": "amount",
+          "label": "价格",
+          "required": true,
+          "options": {
+            "min": 0,
+            "precision": 2,
+            "currency": "CNY"
+          }
+        },
+        {
+          "name": "category",
+          "type": "single_relation",
+          "label": "分类",
+          "required": true,
+          "options": {
+            "target": "Category",
+            "display_field": "name"
+          }
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "label": "状态",
+          "default": "draft",
+          "options": {
+            "enum_values": [
+              {"value": "draft", "label": "草稿"},
+              {"value": "published", "label": "已发布"},
+              {"value": "archived", "label": "已归档"}
+            ]
+          }
+        }
+      ],
+      "indexes": [
+        {
+          "fields": [{"field": "name"}],
+          "unique": false
+        },
+        {
+          "fields": [{"field": "category"}, {"field": "status"}]
+        }
+      ],
+      "strategies": [
+        {
+          "action": "save",
+          "context": "normal"
+        },
+        {
+          "action": "query",
+          "context": "paginated",
+          "config": {
+            "page_size": 20
+          }
+        },
+        {
+          "action": "delete",
+          "context": "soft"
+        }
+      ],
+      "permissions": {
+        "create": ["admin", "editor"],
+        "read": ["admin", "editor", "viewer"],
+        "update": ["admin", "editor"],
+        "delete": ["admin"]
+      }
+    }
+  ]
+}

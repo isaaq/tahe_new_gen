@@ -1,0 +1,267 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tahe.dev/schemas/module/module_dsl.json",
+  "title": "Tahe Module DSL Schema",
+  "description": "Complete module definition combining model + page + API (most AI-friendly)",
+  "type": "object",
+  "required": ["module", "model"],
+  "properties": {
+    "module": {
+      "type": "string",
+      "description": "模块名称（PascalCase）",
+      "pattern": "^[A-Z][a-zA-Z0-9]*$",
+      "examples": ["ProductManagement", "OrderManagement", "UserManagement"]
+    },
+    "description": {
+      "type": "string",
+      "description": "模块描述"
+    },
+    "model": {
+      "$ref": "https://tahe.dev/schemas/model/model_dsl.json",
+      "description": "模型定义"
+    },
+    "pages": {
+      "type": "array",
+      "description": "页面定义列表",
+      "items": {
+        "$ref": "#/definitions/page_definition"
+      }
+    },
+    "api": {
+      "$ref": "#/definitions/api_definition",
+      "description": "API配置"
+    }
+  },
+  "definitions": {
+    "page_definition": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "页面名称"
+        },
+        "type": {
+          "type": "string",
+          "description": "页面类型",
+          "enum": ["list", "form", "detail", "dashboard", "custom"]
+        },
+        "route": {
+          "type": "string",
+          "description": "页面路由",
+          "pattern": "^/[a-z0-9/_-]*$"
+        },
+        "layout": {
+          "type": "string",
+          "description": "页面布局",
+          "enum": ["admin", "default", "blank", "fluid", "grid", "crud"]
+        },
+        "components": {
+          "type": "array",
+          "description": "页面组件",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "config": {"type": "object"}
+            }
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "description": "页面访问权限",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "api_definition": {
+      "type": "object",
+      "properties": {
+        "base_path": {
+          "type": "string",
+          "description": "API基础路径",
+          "pattern": "^/api/[a-z0-9/_-]*$",
+          "examples": ["/api/products", "/api/orders"]
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "API端点定义",
+          "items": {
+            "$ref": "#/definitions/endpoint_definition"
+          }
+        },
+        "authentication": {
+          "type": "boolean",
+          "description": "是否需要认证",
+          "default": true
+        },
+        "rate_limit": {
+          "type": "object",
+          "description": "速率限制",
+          "properties": {
+            "enabled": {"type": "boolean", "default": false},
+            "requests": {"type": "integer", "minimum": 1},
+            "period": {"type": "string", "enum": ["second", "minute", "hour", "day"]}
+          }
+        }
+      }
+    },
+    "endpoint_definition": {
+      "type": "object",
+      "required": ["method", "path", "action"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "HTTP方法",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+        },
+        "path": {
+          "type": "string",
+          "description": "端点路径",
+          "pattern": "^/[a-z0-9/_:-]*$"
+        },
+        "action": {
+          "type": "string",
+          "description": "操作名称",
+          "examples": ["list", "create", "show", "update", "delete", "search"]
+        },
+        "description": {
+          "type": "string",
+          "description": "端点描述"
+        },
+        "parameters": {
+          "type": "array",
+          "description": "请求参数",
+          "items": {
+            "$ref": "#/definitions/parameter_definition"
+          }
+        },
+        "response": {
+          "type": "object",
+          "description": "响应定义",
+          "properties": {
+            "type": {"type": "string"},
+            "schema": {"type": "object"}
+          }
+        },
+        "strategy": {
+          "type": "object",
+          "description": "使用的策略",
+          "properties": {
+            "action": {"type": "string"},
+            "context": {"type": "string"}
+          }
+        }
+      }
+    },
+    "parameter_definition": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "参数名称"
+        },
+        "type": {
+          "type": "string",
+          "description": "参数类型",
+          "enum": ["string", "integer", "number", "boolean", "array", "object"]
+        },
+        "in": {
+          "type": "string",
+          "description": "参数位置",
+          "enum": ["query", "path", "body", "header"],
+          "default": "query"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "是否必填",
+          "default": false
+        },
+        "description": {
+          "type": "string",
+          "description": "参数描述"
+        },
+        "default": {
+          "description": "默认值"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "module": "ProductManagement",
+      "description": "产品管理模块",
+      "model": {
+        "model": "Product",
+        "collection": "products",
+        "fields": [
+          {
+            "name": "name",
+            "type": "text",
+            "label": "产品名称",
+            "required": true
+          },
+          {
+            "name": "price",
+            "type": "amount",
+            "label": "价格",
+            "required": true
+          }
+        ],
+        "strategies": [
+          {"action": "save", "context": "normal"},
+          {"action": "query", "context": "paginated"},
+          {"action": "delete", "context": "soft"}
+        ]
+      },
+      "pages": [
+        {
+          "name": "产品列表",
+          "type": "list",
+          "route": "/products",
+          "layout": "crud",
+          "permissions": ["admin", "editor", "viewer"]
+        },
+        {
+          "name": "产品表单",
+          "type": "form",
+          "route": "/products/form",
+          "layout": "default",
+          "permissions": ["admin", "editor"]
+        }
+      ],
+      "api": {
+        "base_path": "/api/products",
+        "authentication": true,
+        "endpoints": [
+          {
+            "method": "GET",
+            "path": "/",
+            "action": "list",
+            "description": "获取产品列表",
+            "parameters": [
+              {"name": "page", "type": "integer", "in": "query"},
+              {"name": "page_size", "type": "integer", "in": "query"}
+            ],
+            "strategy": {"action": "query", "context": "paginated"}
+          },
+          {
+            "method": "POST",
+            "path": "/",
+            "action": "create",
+            "description": "创建产品",
+            "strategy": {"action": "save", "context": "normal"}
+          },
+          {
+            "method": "DELETE",
+            "path": "/:id",
+            "action": "delete",
+            "description": "删除产品",
+            "strategy": {"action": "delete", "context": "soft"}
+          }
+        ]
+      }
+    }
+  ]
+}

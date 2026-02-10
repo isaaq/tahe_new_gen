@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tahe.dev/schemas/strategy/strategy_config.json",
+  "title": "Tahe Strategy Configuration Schema",
+  "description": "Schema for strategy.yaml configuration file",
+  "type": "object",
+  "required": ["strategies"],
+  "properties": {
+    "strategies": {
+      "type": "array",
+      "description": "策略配置列表",
+      "items": {
+        "$ref": "#/definitions/strategy_config"
+      }
+    }
+  },
+  "definitions": {
+    "strategy_config": {
+      "type": "object",
+      "required": ["domain", "action", "context", "class"],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "业务域",
+          "examples": ["document", "product", "order", "permission", "search", "field"],
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "action": {
+          "type": "string",
+          "description": "操作类型",
+          "enum": [
+            "save", "submit", "query", "delete", "validate",
+            "notification", "permission", "filter", "search",
+            "workflow", "process", "export", "import"
+          ]
+        },
+        "context": {
+          "type": "string",
+          "description": "执行上下文",
+          "examples": [
+            "draft", "normal", "publish", "review",
+            "paginated", "cached", "encrypted",
+            "soft", "hard", "cascade",
+            "default", "number_range"
+          ],
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "class": {
+          "type": "string",
+          "description": "策略类的完整路径",
+          "pattern": "^[A-Z][a-zA-Z0-9:]*$",
+          "examples": [
+            "Plugins::Strategy::Save::DraftSaveStrategy",
+            "Plugins::Strategy::Query::PaginatedQueryStrategy",
+            "Plugins::Strategy::Delete::SoftDeleteStrategy"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "策略描述"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "优先级（数字越大优先级越高）",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 50
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "是否启用",
+          "default": true
+        },
+        "config": {
+          "type": "object",
+          "description": "策略配置参数",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "strategies": [
+        {
+          "domain": "document",
+          "action": "save",
+          "context": "draft",
+          "class": "Plugins::Strategy::Save::DraftSaveStrategy",
+          "description": "草稿保存策略",
+          "priority": 50,
+          "enabled": true
+        },
+        {
+          "domain": "document",
+          "action": "save",
+          "context": "normal",
+          "class": "Plugins::Strategy::Save::NormalSaveStrategy",
+          "description": "正常保存策略",
+          "priority": 50,
+          "enabled": true
+        },
+        {
+          "domain": "document",
+          "action": "query",
+          "context": "paginated",
+          "class": "Plugins::Strategy::Query::PaginatedQueryStrategy",
+          "description": "分页查询策略",
+          "priority": 50,
+          "enabled": true,
+          "config": {
+            "default_page_size": 20,
+            "max_page_size": 100
+          }
+        }
+      ]
+    }
+  ]
+}

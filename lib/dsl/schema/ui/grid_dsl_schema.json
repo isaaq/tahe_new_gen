@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tahe.dev/schemas/ui/grid_dsl.json",
+  "title": "Tahe Grid DSL Schema",
+  "description": "Schema for grid-based UI DSL (project_registration_form.krdsl style)",
+  "type": "object",
+  "required": ["grid", "items"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "页面标题"
+    },
+    "description": {
+      "type": "string",
+      "description": "页面描述"
+    },
+    "grid": {
+      "type": "integer",
+      "description": "网格列数",
+      "minimum": 1,
+      "maximum": 24,
+      "default": 12
+    },
+    "cell_height": {
+      "type": "integer",
+      "description": "单元格高度（像素）",
+      "minimum": 20,
+      "maximum": 500,
+      "default": 80
+    },
+    "margin": {
+      "type": "integer",
+      "description": "网格间距（像素）",
+      "minimum": 0,
+      "maximum": 50,
+      "default": 10
+    },
+    "static_grid": {
+      "type": "boolean",
+      "description": "是否静态网格（不可拖拽调整）",
+      "default": false
+    },
+    "disable_drag": {
+      "type": "boolean",
+      "description": "禁用拖拽",
+      "default": false
+    },
+    "disable_resize": {
+      "type": "boolean",
+      "description": "禁用调整大小",
+      "default": false
+    },
+    "animate": {
+      "type": "boolean",
+      "description": "启用动画",
+      "default": true
+    },
+    "sections": {
+      "type": "array",
+      "description": "区域分组（可选，用于组织items）",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"}
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "网格项列表",
+      "items": {
+        "$ref": "#/definitions/grid_item"
+      }
+    }
+  },
+  "definitions": {
+    "grid_item": {
+      "type": "object",
+      "required": ["id", "x", "y", "w", "h", "content"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "网格项唯一ID",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "x": {
+          "type": "integer",
+          "description": "X坐标（列）",
+          "minimum": 0
+        },
+        "y": {
+          "type": "integer",
+          "description": "Y坐标（行）",
+          "minimum": 0
+        },
+        "w": {
+          "type": "integer",
+          "description": "宽度（列数）",
+          "minimum": 1
+        },
+        "h": {
+          "type": "integer",
+          "description": "高度（行数）",
+          "minimum": 1
+        },
+        "min_w": {
+          "type": "integer",
+          "description": "最小宽度",
+          "minimum": 1
+        },
+        "min_h": {
+          "type": "integer",
+          "description": "最小高度",
+          "minimum": 1
+        },
+        "max_w": {
+          "type": "integer",
+          "description": "最大宽度"
+        },
+        "max_h": {
+          "type": "integer",
+          "description": "最大高度"
+        },
+        "no_resize": {
+          "type": "boolean",
+          "description": "禁止调整大小",
+          "default": false
+        },
+        "no_move": {
+          "type": "boolean",
+          "description": "禁止移动",
+          "default": false
+        },
+        "locked": {
+          "type": "boolean",
+          "description": "锁定（禁止移动和调整）",
+          "default": false
+        },
+        "content": {
+          "description": "网格项内容（KR标签）",
+          "oneOf": [
+            {"$ref": "#/definitions/kr_tag"},
+            {"type": "string", "description": "原始HTML/KR标签字符串"}
+          ]
+        }
+      }
+    },
+    "kr_tag": {
+      "type": "object",
+      "required": ["tag"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "description": "KR标签名称",
+          "pattern": "^kr:[a-z_]+$",
+          "examples": [
+            "kr:section",
+            "kr:form_row",
+            "kr:form_field",
+            "kr:toolbar",
+            "kr:button",
+            "kr:table",
+            "kr:tabs"
+          ]
+        },
+        "attributes": {
+          "type": "object",
+          "description": "标签属性",
+          "additionalProperties": true
+        },
+        "children": {
+          "type": "array",
+          "description": "子标签",
+          "items": {
+            "$ref": "#/definitions/kr_tag"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "title": "立项信息登记",
+      "description": "项目立项信息登记表单",
+      "grid": 12,
+      "cell_height": 80,
+      "margin": 10,
+      "static_grid": true,
+      "items": [
+        {
+          "id": "toolbar",
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 2,
+          "content": {
+            "tag": "kr:toolbar",
+            "children": [
+              {
+                "tag": "kr:button",
+                "attributes": {
+                  "text": "保存",
+                  "icon": "save",
+                  "theme": "primary"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "form_row1",
+          "x": 0,
+          "y": 4,
+          "w": 12,
+          "h": 2,
+          "content": {
+            "tag": "kr:form_row",
+            "children": [
+              {
+                "tag": "kr:form_field",
+                "attributes": {
+                  "name": "date",
+                  "label": "日期",
+                  "type": "date",
+                  "width": "33%"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
