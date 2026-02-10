@@ -99,7 +99,6 @@ module Book
         @temp_dir = nil
       end
     end
-    end
 
     # 创建新的 .ss 包
     # pages_dir: 页面图片目录（可选，魔法书页面）

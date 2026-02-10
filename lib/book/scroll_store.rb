@@ -340,7 +340,7 @@ module Book
       # 检查是否已存在
       existing = Common::M[INSTALLED_COLLECTION].query(scroll_id: scroll_id).first
       if existing
-        Common::M[INSTALLED_COLLECTION].update(scroll_id: scroll_id, installed_data)
+        Common::M[INSTALLED_COLLECTION].update({scroll_id: scroll_id}, installed_data)
       else
         Common::M[INSTALLED_COLLECTION].add(installed_data)
       end
